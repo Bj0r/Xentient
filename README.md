@@ -4,7 +4,7 @@
 
 Xentient is a hardware architecture and software harness designed to bridge the gap between digital AI and physical environments. This project focuses on a modular "Node" approach where physical capabilities (Listening, Speaking, Seeing, Sensing) are snapped together to form a bespoke identity.
 
-[Live Interactive Presentation](xentient_presentation.html)
+[Live Interactive Presentation 🌐](https://daviddatux25.github.io/Xentient/xentient_presentation.html)
 
 ---
 
@@ -19,8 +19,10 @@ The primary entry point for understanding Xentient is the **Interactive Presenta
 
 ## 🛠️ Project Structure
 
-- `xentient_presentation.html`: The central interactive dashboard (Single-file HTML/CSS/JS).
-- `xentient.md`: Comprehensive technical specifications and architectural documentation.
+- [`xentient_presentation.html`](xentient_presentation.html): The central interactive dashboard (Single-file HTML/CSS/JS).
+- [`xentient.md`](xentient.md): Comprehensive technical specifications and architectural documentation.
+- [`Xentient_Procurement_Strategy.md`](Xentient_Procurement_Strategy.md): Detailed technical analysis and strategic parts procurement.
+- [`Xentient_Shopping_List.md`](Xentient_Shopping_List.md): Blank Bill of Materials list tailored for scouting local shop prices.
 
 ## 🚀 Getting Started
 

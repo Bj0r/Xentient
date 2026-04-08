@@ -554,6 +554,7 @@
       <a href="#interaction" class="nav-item">03. Realtime Flow</a>
       <a href="#architecture" class="nav-item">04. Layered Arch</a>
       <a href="#states" class="nav-item">05. Node Lifecycle</a>
+      <a href="#bom" class="nav-item">06. BOM & Economics</a>
     </div>
     
     <div style="margin-top:auto">
@@ -826,6 +827,70 @@
               <td style="padding: 16px; color: var(--secondary);">payload</td>
               <td style="padding: 16px;">bytes</td>
               <td style="padding: 16px; color: var(--text-muted); font-family: var(--sans);">Audio chunk, JPEG, sensor event</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 6: BOM & Economics --->
+    <section id="bom">
+      <h2>BOM & Procurement Strategy</h2>
+      <p class="subtitle">An optimized, hybrid local/overseas procurement strategy targeting the ₱1,200 &ndash; ₱1,800 unit cap for the v1 prototype.</p>
+
+      <div class="glass-panel" style="margin-top:20px; overflow-x:auto;">
+        <h3 style="margin-bottom:16px; color:var(--accent-light);">Total Cost Breakdown (Optimized Hybrid)</h3>
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted);">
+              <th style="padding: 16px;">Category</th>
+              <th style="padding: 16px;">Component Selection</th>
+              <th style="padding: 16px; text-align: right;">Estimated Cost (₱)</th>
+              <th style="padding: 16px;">Recommended Shop</th>
+            </tr>
+          </thead>
+          <tbody class="mono" style="font-size: 0.9rem;">
+            <tr style="border-bottom: 1px solid rgba(42, 45, 62, 0.4);">
+              <td style="padding: 16px; color: var(--secondary);">Node Base</td>
+              <td style="padding: 16px; color: var(--text);">ESP32, TP4056, MT3608, Holder</td>
+              <td style="padding: 16px; text-align: right;">₱350.00</td>
+              <td style="padding: 16px; color: var(--text-muted); font-family: var(--sans);">Aitexm.ph / Nanr9779.ph</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(42, 45, 62, 0.4);">
+              <td style="padding: 16px; color: var(--secondary);">Power Source</td>
+              <td style="padding: 16px; color: var(--text);">18650 Li-ion Cell</td>
+              <td style="padding: 16px; text-align: right;">₱180.00</td>
+              <td style="padding: 16px; color: var(--text-muted); font-family: var(--sans);">Makerlab</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(42, 45, 62, 0.4);">
+              <td style="padding: 16px; color: var(--secondary);">Audio Suite</td>
+              <td style="padding: 16px; color: var(--text);">INMP441, MAX98357A, Speaker</td>
+              <td style="padding: 16px; text-align: right;">₱200.00</td>
+              <td style="padding: 16px; color: var(--text-muted); font-family: var(--sans);">Aitexm.ph</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(42, 45, 62, 0.4);">
+              <td style="padding: 16px; color: var(--secondary);">Vision/Env</td>
+              <td style="padding: 16px; color: var(--text);">OV2640, BME280, PIR</td>
+              <td style="padding: 16px; text-align: right;">₱400.00</td>
+              <td style="padding: 16px; color: var(--text-muted); font-family: var(--sans);">Aitexm.ph / Elexhub</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(42, 45, 62, 0.4);">
+              <td style="padding: 16px; color: var(--secondary);">Connectivity</td>
+              <td style="padding: 16px; color: var(--text);">JST-SH Cables, Headers, Wires</td>
+              <td style="padding: 16px; text-align: right;">₱250.00</td>
+              <td style="padding: 16px; color: var(--text-muted); font-family: var(--sans);">Nanr9779.ph</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 16px; color: var(--secondary);">Mechanical</td>
+              <td style="padding: 16px; color: var(--text);">ABS Box, Standoffs, Perfboard</td>
+              <td style="padding: 16px; text-align: right;">₱280.00</td>
+              <td style="padding: 16px; color: var(--text-muted); font-family: var(--sans);">Aitexm.ph</td>
+            </tr>
+            <tr style="font-weight: bold; color: var(--success); font-family: var(--sans);">
+              <td style="padding: 16px; font-size: 1.1rem;">Total</td>
+              <td style="padding: 16px; font-size: 1.1rem;">Comprehensive v1 Build</td>
+              <td style="padding: 16px; text-align: right; font-size: 1.2rem;">₱1,660.00</td>
+              <td style="padding: 16px; font-size: 1.1rem;">Hybrid Mix</td>
             </tr>
           </tbody>
         </table>
