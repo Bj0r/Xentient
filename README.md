@@ -4,7 +4,7 @@
 
 Xentient is a hardware architecture and software harness designed to bridge the gap between digital AI and physical environments. This project focuses on a modular "Node" approach where physical capabilities (Listening, Speaking, Seeing, Sensing) are snapped together to form a bespoke identity.
 
-[Live Interactive Presentation 🌐](https://daviddatux25.github.io/Xentient/xentient_presentation.html)
+[Live Interactive Presentation 🌐](https://daviddatux25.github.io/Xentient/xentient_presentation.html) | [Project Timeline & Plan 📅](Xentient_Project_Timeline.md)
 
 ---
 
