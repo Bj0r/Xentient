@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "Xentient",
+  "project_id": "0536aa77-cc26-4954-a18b-7849c484e739"
+}
