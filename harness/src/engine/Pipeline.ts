@@ -141,16 +141,23 @@ export class Pipeline extends EventEmitter {
 
     // STAGE 6+7: TTS streaming — pipe LLM tokens → TTS → Audio immediately
     logger.info('TTS: synthesizing...');
-    const audioStream = tts.synthesizeStreaming(tokenStream);
-
+    
+    // Intercept tokens to accumulate the full response for memory persistence
     let fullResponse = '';
-    for await (const audioChunk of audioStream) {
-      audio.sendAudio(audioChunk as Buffer);
-      // Also collect full text for memory persistence
+    async function* interceptTokens(stream: AsyncIterable<string>) {
+      for await (const token of stream) {
+        fullResponse += token;
+        yield token;
+      }
     }
 
-    // Collect full LLM response for memory (from a separate accumulator)
-    // Note: in production, track this in the synthesizeStreaming intermediate
+    const audioStream = tts.synthesizeStreaming(interceptTokens(tokenStream));
+
+    for await (const audioChunk of audioStream) {
+      audio.sendAudio(audioChunk as Buffer);
+    }
+
+    // Collect full LLM response for memory
     if (this.opts.onTurnComplete) {
       await this.opts.onTurnComplete(transcript, fullResponse);
     }
