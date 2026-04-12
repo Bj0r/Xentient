@@ -25,28 +25,39 @@ This phase does NOT include:
 - Each "workflow" is a sequence of processing nodes: Trigger → Transform → Process → Output.
 
 ### Processing Pipeline (HARN-01)
-- **Pipeline stages**: MQTT Ingestion → STT (Cloud API) → Memory Injection → LLM Reasoning → TTS Generation → MQTT Response.
-- STT provider: **Google Cloud Speech-to-Text** or **OpenAI Whisper API** (Cloud, not local).
-- TTS provider: **Google Cloud TTS** or **ElevenLabs API**.
+- **Pipeline stages**: WebSocket Audio Ingestion → VAD Boundary Detection → STT → Memory Injection → LLM Reasoning → TTS Generation → WebSocket Audio Response.
+- Implemented as **Node.js Transform Streams** chained with `.pipe()` — Archon-inspired DAG pattern.
+- Pipeline definition stored as JSON config (editable via Web App in Phase 3).
+- STT provider: **Deepgram** (streaming WebSocket, <300ms latency). Fallback: OpenAI Whisper API.
+- TTS provider: **ElevenLabs Flash v2.5** (~75ms inference). Fallback: Google Cloud TTS.
 - Audio format: **Raw PCM 16-bit mono 16kHz** from the Node Base (no encoding overhead on ESP32).
+- All providers behind a common interface — hot-swappable via config only.
 
 ### LLM Integration (HARN-03)
 - **Cloud APIs are mandatory for V1** — local LLMs (Ollama) are too slow for the required "snappy" experience.
 - Supported providers: **GPT-4o**, **Claude Sonnet/Opus**, **Gemini 1.5 Pro/Flash**.
+- Provider-abstracted interface — switching LLMs is a config change, not a code change.
 - The LLM receives: system prompt + memory-injected context + transcribed user speech.
-- The LLM returns: text response → piped to TTS → audio published back via MQTT.
+- The LLM returns streaming tokens → piped immediately to TTS as sentences complete.
 
-### MQTT Transport (HARN-02)
-- Broker: **Mosquitto** running locally on the dev machine / Raspberry Pi.
-- Topic structure:
-  - `xentient/{node_id}/audio/chunk` — Raw PCM audio chunks from Node Base
-  - `xentient/{node_id}/audio/vad` — VAD start/stop events
+### Transport Layer — DUAL PROTOCOL (HARN-02)
+**⚠️ Research pivot: MQTT is NOT suitable for audio streaming.**
+- **WebSocket** (binary frames via `ws` package): Audio streaming (ESP32 ↔ Harness).
+- **MQTT** (Mosquitto broker): Sensor telemetry, control commands, heartbeats, VAD events.
+
+MQTT topic structure (telemetry/control only):
+  - `xentient/{node_id}/audio/vad` — VAD start/stop events (JSON)
   - `xentient/{node_id}/sensors/env` — Temperature/Humidity readings
   - `xentient/{node_id}/camera/frame` — JPEG frames from ESP-CAM (via Node Base UART)
-  - `xentient/{node_id}/control/tts` — TTS audio response back to Node Base
   - `xentient/{node_id}/control/cmd` — Control commands to Node Base
   - `xentient/{node_id}/status/heartbeat` — Node health pings
-- QoS: Level 1 for audio, Level 0 for telemetry.
+- QoS: Level 1 for control commands, Level 0 for telemetry.
+
+### Web App Framework (WEB-01, WEB-02, WEB-03)
+- **Laravel + Livewire** — locked decision per user specification.
+- Laravel handles routing, auth, MQTT bridge, and API endpoints to the Harness.
+- Livewire handles reactive UI components (status dashboard, activity log, flow config).
+- Laravel Echo + Pusher/Soketi for real-time WebSocket updates to the browser.
 
 ### Memory Layer — Hermes-Agent Pattern (MEM-01, MEM-02, MEM-03)
 - Based on the **Hermes-Agent** architecture for proactive, self-improving memory.
@@ -59,11 +70,10 @@ This phase does NOT include:
 - **Cross-session persistence**: User identity persists across power cycles / restarts. On first interaction after restart, memory recalls the user's name and recent context.
 
 ### Agent's Discretion
-- Internal module structure and file organization of the Node.js Harness.
-- Specific npm packages for MQTT client (e.g., `mqtt.js` vs `aedes`).
+- Internal module/folder structure of the Node.js Harness.
 - Error handling and retry strategies for Cloud API failures.
-- Logging framework choice.
-- How pipeline stages communicate internally (events, streams, or direct calls).
+- Logging framework choice (Pino recommended).
+- Exact Transform stream vs EventEmitter composition for pipeline stages.
 
 </decisions>
 
