@@ -1,5 +1,6 @@
 import mqtt from 'mqtt';
 import { EventEmitter } from 'events';
+import { randomBytes } from 'crypto';
 import pino from 'pino';
 
 const logger = pino({ name: 'mqtt-client' });
@@ -16,7 +17,7 @@ export class MqttClient extends EventEmitter {
     super();
     this.nodeId = nodeId;
     this.client = mqtt.connect(brokerUrl, {
-      clientId: `harness-${Date.now()}`,
+      clientId: `harness-${randomBytes(4).toString('hex')}`,
       reconnectPeriod: 2000,
       keepalive: 30,
     });
