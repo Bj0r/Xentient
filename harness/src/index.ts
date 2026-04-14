@@ -10,6 +10,10 @@ import { ElevenLabsProvider } from './providers/tts/ElevenLabsProvider';
 import { OpenAIProvider } from './providers/llm/OpenAIProvider';
 import { Pipeline } from './engine/Pipeline';
 import { STTProvider, TTSProvider, LLMProvider, MemoryContext } from './providers/types';
+import { initDatabase } from './memory/schema';
+import { MemoryDB } from './memory/MemoryDB';
+import { MemoryInjector } from './memory/MemoryInjector';
+import { FactExtractor } from './memory/FactExtractor';
 import pino from 'pino';
 
 const logger = pino({ name: 'xentient-harness' });
@@ -47,28 +51,51 @@ async function main() {
   const tts = createTTSProvider();
   const llm = createLLMProvider();
 
-  // Placeholder memory context — will be replaced by Plan 02-02
-  const getMemoryContext = async (_: string): Promise<MemoryContext> => ({
-    userProfile: 'You are talking to an unknown user.',
-    relevantEpisodes: '',
-    extractedFacts: '',
-  });
+  // Initialize Hermes memory system
+  const db = initDatabase();
+  const memoryDb = new MemoryDB(db);
+  const memoryInjector = new MemoryInjector(memoryDb, llm);
+  const factExtractor = new FactExtractor(llm, memoryDb);
 
-  const pipeline = new Pipeline({ stt, tts, llm, mqtt, audio: audioServer, getMemoryContext });
+  // Real memory context function (replaces stub)
+  const getMemoryContext = async (userMessage: string): Promise<MemoryContext> => {
+    return memoryInjector.buildContext(userMessage);
+  };
+
+  // Track turn count for session summary
+  let turnCount = 0;
+
+  // Post-turn callback: save episode + extract facts
+  const onTurnComplete = async (userMessage: string, aiResponse: string): Promise<void> => {
+    memoryDb.saveTurn('user', userMessage);
+    memoryDb.saveTurn('assistant', aiResponse);
+    turnCount++;
+    // Fire-and-forget — extractAfterTurn queues internally (returns void, not a Promise)
+    factExtractor.extractAfterTurn(userMessage, aiResponse);
+  };
+
+  const pipeline = new Pipeline({ stt, tts, llm, mqtt, audio: audioServer, getMemoryContext, onTurnComplete });
 
   pipeline.on('transcript', (t) => logger.info({ transcript: t }, 'User said'));
   pipeline.on('turnComplete', (t) => logger.info(t, 'Turn complete'));
   pipeline.on('heartbeat', (h) => logger.debug(h, 'Heartbeat'));
 
+  // Log memory system status
+  const userName = memoryDb.getUserName();
+  logger.info({ userName: userName ?? 'unknown' }, 'Memory system ready');
   logger.info({ wsPort: config.audio.wsPort, mqtt: config.mqtt.brokerUrl }, 'Harness ready');
 
-  // Graceful shutdown
-  process.on('SIGINT', () => {
-    logger.info('Shutting down...');
+  // Graceful shutdown — handle both SIGINT (Ctrl+C) and SIGTERM (Docker/PM2/K8s)
+  const shutdown = async (signal: string) => {
+    logger.info({ signal }, 'Shutting down gracefully...');
+    await factExtractor.flush();
+    memoryDb.endSession(turnCount);
     mqtt.disconnect();
     audioServer.close();
     process.exit(0);
-  });
+  };
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
 
 main().catch((err) => {
