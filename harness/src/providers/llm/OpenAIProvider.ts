@@ -8,8 +8,16 @@ export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
   private model: string;
 
-  constructor(apiKey: string, model: string = 'gpt-4o') {
-    this.client = new OpenAI({ apiKey });
+  constructor(apiKey: string, model: string = 'gpt-4o', baseURL?: string) {
+    this.client = new OpenAI({ 
+      apiKey, 
+      baseURL,
+      // OpenRouter compatibility requirement for some headers:
+      defaultHeaders: baseURL?.includes('openrouter') ? {
+        'HTTP-Referer': 'http://localhost:8080',
+        'X-Title': 'Xentient Harness Local',
+      } : undefined
+    });
     this.model = model;
   }
 

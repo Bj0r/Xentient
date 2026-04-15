@@ -10,7 +10,7 @@
 
 Prima Node is the first Xentient node — a proof-of-concept prototype that demonstrates the core thesis: **modular hardware + configurable AI + physical presence**.
 
-The node sends sensor data (audio, video, environmental) via MQTT. The harness layer (YOU own) decides what to do with that data — stream, archive, trigger workflows, or query an LLM.
+The node sends sensor data (audio, video, environmental) via MQTT. The data flow, triggers, and actions are **managed entirely via a Web App Interface**, while the **harness layer** serves as the general-purpose execution engine that takes over—routing data to stream, archive, trigger workflows, or query an LLM based on user configuration.
 
 ---
 
@@ -56,17 +56,16 @@ The node sends sensor data (audio, video, environmental) via MQTT. The harness l
 
 ## 3. What Was Implied
 
-### The Node Sends, The Harness Decides
+### The Node Sends, The Web App Manages, The Harness Executes
 
 The node is **dumb hardware** — it only:
 - Captures raw data from peripherals
 - Applies simple VAD threshold
 - Sends data to MQTT
 
-The harness owns the intelligence:
-- Stream? Archive? Query? Ignore?
-- Trigger workflows based on data
-- Route to LLM, storage, or webhook
+The Web App / Harness stack owns the intelligence:
+- **Web App Interface:** The control center where users graphically or programmatically manage data flows, set triggers, and organize logic.
+- **Harness Engine:** The general-purpose execution layer (n8n-like) that "takes over" to run the flows — executing the routing to streams, archives, LLMs, or webhooks based on the Web App's configuration.
 
 ### Not True Modularity (v1 Limitation)
 
@@ -145,10 +144,12 @@ The harness owns the intelligence:
        └───────────────┬┴──────────────┘
                       ↓
                ┌─────────────┐
-               │  HARNESS   │
+               │ WEB APP UI  │ ← Data Flow Control / Management
+               ├─────────────┤
+               │  HARNESS   │ ← Execution Layer
                │           │
-               │ Workflow  │ ← Archon-inspired
-               │ Engine    │   (configurable steps)
+               │ Workflow  │ ← n8n-like (general purpose)
+               │ Engine    │   + Archon-inspired
                │           │
                │ Memory    │ ← Hermes-Agent-inspired
                │ Layer     │   (self-improving, persistent)
@@ -169,16 +170,20 @@ xentient/{node_id}/control # From harness: play audio, capture frame
 
 ## 6. Influences
 
-### Archon — Workflow Engine
+### n8n + Archon — Workflow Engine
 
-> "Think n8n, but for software development."
+> "General-purpose execution meets AI workflow."
 
-**Applied:** Own the harness as a workflow engine where you define:
-- What data triggers what action
-- Configurable steps (STT → LLM → TTS)
-- Extensible via code
+- **n8n:** We lean heavily towards an n8n-like general-purpose approach. It offers extreme flexibility to integrate various triggers and processes.
+- **Archon:** Inspiration for the AI-specific multi-step interactions and sub-agents.
 
-**Source:** https://github.com/coleam00/Archon
+**Applied:** The Web App interface acts as the central control for defining data flows, while the Harness acts as the n8n-like engine that takes over execution. You graphically/programmatically define:
+- What data triggers what action (managed on the Web App)
+- Configurable execution steps (STT → LLM → TTS) via the general-purpose Harness engine.
+
+**Sources:** 
+- https://n8n.io/
+- https://github.com/coleam00/Archon
 
 ### Hermes-Agent — Memory Layer
 
@@ -221,10 +226,10 @@ xentient/{node_id}/control # From harness: play audio, capture frame
 
 ## 9. Extensibility Points (Designed for Growth)
 
-1. **Mode system** — add new modes via config, not firmware
+1. **Mode system (v2 focus)** — Modes can be dynamically extended directly via the Web App interface (which is then shared with the harness execution engine). Everything is fully customizable over the web layer, keeping firmware static.
 2. **Trigger registration** — web interface to register new phrases
 3. **Memory layer** — plug in Hermes-Agent concepts later
-4. **Workflow library** — shareable workflow configs
+4. **Workflow library** — shareable workflow configs via the n8n-like interface
 5. **Peripheral slots** — add new slot types without rewriting firmware (v2)
 
 ---

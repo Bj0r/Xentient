@@ -91,14 +91,14 @@ The ESP32 dev board (node base) runs firmware that does exactly what the archite
 - **State machine** — UNCLAIMED → BARE → OPERATIONAL → DEGRADED with RGB LED feedback
 - **Power management** — slot-specific voltage delivery (3.3V for Listen/Sight/Sense, 5V for Speak)
 
-**Open decisions (resolve in sub-session):**
+**Decisions (Finalized for V1):**
 
-| Decision | Options | Notes |
+| Decision | Choice | Notes |
 |----------|---------|-------|
-| Dev framework | Arduino IDE / PlatformIO+Arduino / ESP-IDF | Affects all driver code. Arduino = fastest start. ESP-IDF = best I2S DMA control. |
-| Upstream protocol | MQTT / WebSocket / HTTP chunked | Architecture suggests MQTT for events+audio, WebSocket for camera streams. May use both. |
-| Audio format | Raw PCM / WAV framed / Opus | What format does the mic stream upstream? What format does TTS audio arrive in? Must match harness. |
-| Camera connection | UART serial / SPI / WiFi+MQTT (both boards on same network) | How does the ESP32-CAM-MB send JPEG frames to the node base or directly to the harness? UART = wired, simple. WiFi = wireless, both boards publish to same broker independently. |
+| Dev framework | Arduino (PlatformIO) | Fastest path to demo. |
+| Upstream protocol | MQTT | Single unified protocol for all data/control. |
+| Audio format | Raw PCM | 16-bit, 16kHz mono. Simplest transport. |
+| Camera connection | UART → Node Base | Wired reliability, node base manages all comms. |
 
 **Sub-session:** *"Node base firmware — framework choice, GPIO pin map, driver code generation, inter-board protocol"*
 
@@ -129,45 +129,30 @@ The ESP32-CAM-MB is an architectural deviation: the spec says peripheral units a
 
 > **Can start: NOW** | Runs on laptop/server, completely independent of hardware.
 
-The harness is the AI brain. For Phase 0, it's a service running on a laptop that:
+The harness is the AI brain, acting as a **general-purpose execution engine (n8n-style)**. Decisions on data flows and triggers are managed via the **Web App UI**. For Phase 0, it's a service that:
 
-1. **Receives** audio/sensor data from the node via the upstream protocol
-2. **Processes** through the pipeline: STT → identity (skip for Phase 0) → memory → LLM → TTS
+1. **Receives** audio/sensor data from the node via MQTT
+2. **Processes** through the visual pipeline: STT → memory (Hermes-Agent-inspired) → LLM → TTS
 3. **Sends** audio response back to the node's speaker
-4. **Optionally receives** camera frames and sensor readings for context enrichment
+4. **Enriches context** with camera frames and sensor readings as defined in the flow config
 
-The harness reads its configuration from the directory structure defined in the architecture:
+The harness configuration is managed via the Web App and backed by:
 ```
 harness/
-├── model.config        # which AI model + endpoint
-├── rules.md            # system prompt, persona, constraints
-├── memory.policy       # scope, retention, retrieval strategy
-├── pipeline.hooks      # cross-peripheral triggers (audio → camera fetch)
-└── modes.policy        # data modes per peripheral
+├── web-app/            # Interface for controlling/visualizing flows
+├── model.config        # Choice: Cloud APIs only for snappy V1
+├── rules.md            # Persona and system rules
+├── memory.policy       # Hermes-Agent pattern (FTS5 + persistent model)
+└── modes.policy        # Dynamic modes extensible via Web App
 ```
 
-**Open decisions — each has multiple viable options:**
-
-#### STT (Speech-to-Text)
-
-| Option | Local/Cloud | Latency | Offline? | Notes |
-|--------|-------------|---------|----------|-------|
-| faster-whisper | Local | ~1-3s | ✅ | CTranslate2 Whisper. Best local. |
-| whisper.cpp | Local | ~2-5s | ✅ | C++ port. Runs on minimal hardware. |
-| Vosk | Local | <1s | ✅ | Lightweight, real-time, lower accuracy. |
-| OpenAI Whisper API | Cloud | ~1-2s | ❌ | Simple, reliable. |
-| Google Cloud STT | Cloud | <1s | ❌ | Free tier available. |
-| Deepgram | Cloud | <0.5s | ❌ | Fastest cloud option. |
-
-#### LLM (Language Model)
-
-| Option | Local/Cloud | Latency | Offline? | Notes |
-|--------|-------------|---------|----------|-------|
-| Ollama (llama3.1, phi3, gemma2) | Local | 2-5s | ✅ | Best for demo reliability. Pick model by laptop GPU. |
-| LM Studio | Local | 2-5s | ✅ | GUI-based, easy model switching. |
-| OpenAI API (GPT-4o-mini) | Cloud | 1-2s | ❌ | Fast, cheap. |
-| Anthropic API (Claude) | Cloud | 1-3s | ❌ | Strong reasoning. |
-| Google Gemini API | Cloud | 1-2s | ❌ | Free tier generous. |
+| Option | Choice | Notes |
+|--------|-------------|-------|
+| **STT** | Faster-Whisper (Local) / OpenAI (Cloud) | Evaluate for lowest latency. |
+| **LLM** | Cloud API (GPT/Claude/Gemini) | **MANDATORY for V1.** Local LLMs too slow for snappy demo. |
+| **TTS** | Piper (Local) / Edge-TTS (Cloud) | High-speed response is priority. |
+| **Memory** | Hermes-Agent Pattern | FTS5 + LLM for cross-session recall. |
+| **Pipeline** | n8n-style Orchestration | Visual flows for max flexibility. |
 
 #### TTS (Text-to-Speech)
 

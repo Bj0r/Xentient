@@ -52,11 +52,11 @@ Xentient is built in four distinct layers. Each is independently replaceable. Th
 │         Account · Node Registry · Space Management · OTA    │
 ├──────────────┬──────────────┬──────────────┬────────────────┤
 │   HARNESS    │   IDENTITY   │    MEMORY    │    STREAMS     │
-│  (AI layer)  │   (gate)     │  (context)   │   (output)     │
-│              │              │              │                │
-│  cloud /     │  cloud /     │  cloud /     │  cloud /       │
-│  self-hosted │  local       │  local DB    │  local broker  │
-│  / local     │              │              │                │
+│ (Exec Engine)│   (gate)     │  (context)   │   (output)     │
+│      ↑       │              │              │                │
+│ WEB APP UI   │  cloud /     │  cloud /     │  cloud /       │
+│ (Control)    │  local       │  local DB    │  local broker  │
+└──────────────┴──────────────┴──────────────┴────────────────┘
 ├─────────────────────────────────────────────────────────────┤
 │                      XENTIENT NODES                         │
 │       Carrier Module + Snap-on Peripherals + Power          │
@@ -296,14 +296,16 @@ A Space is a named, owner-controlled logical environment. It is not a physical l
 
 ### Cross-Node Coordination
 
-Nodes within a space do not communicate with each other directly. All coordination between nodes is mediated by the harness. This is a deliberate architectural constraint: it keeps node firmware lean, it makes coordination logic programmable, and it prevents nodes from needing awareness of each other.
+Nodes within a space do not communicate with each other directly. All coordination between nodes is mediated by the harness/web app stack. This is a deliberate architectural constraint: it keeps node firmware lean, it makes coordination logic programmable and visually manageable, and it prevents nodes from needing awareness of each other.
 
 **The coordination pattern:**
 
 ```
-Node A (Ear) — VAD threshold crossed → audio chunk sent upstream
+Node A (Ear) — VAD threshold crossed → audio chunk sent upstream (MQTT)
         ↓
-Harness pipeline: STT → identity → memory → model
+Web App Flow Orchestration: Triggers general-purpose execution
+        ↓
+Harness pipeline: STT → identity → memory (Hermes-inspired) → model
         ↓                              ↓
 Harness → fetch command → Node B     Harness → TTS audio → Node C
           (Eye — capture frame)                 (Voice — play response)
@@ -325,17 +327,19 @@ Adding a new node to a space never requires changing the firmware or configurati
 
 ---
 
-### Layer 3 — The Harness
+### Layer 3 — The Harness & Web App
 
-The Harness is the AI programming layer. It is attached to a Space and defines everything about how that space's AI behaves. It is fully open — users can write their own, pick from the marketplace, or import from any compatible format.
+The Harness is the AI programming layer, functionally acting as a **general-purpose execution engine (n8n-like)**. It is attached to a Space and defines everything about how that space's AI behaves. Control and management of these behaviors are exposed through a **Web App Interface**. It is fully open — users can write their own, pick from the marketplace, or import from any compatible format.
 
-**A Harness contains:**
+**A Harness Setup contains:**
 
 ```
 harness/
-├── model.config        # which AI model + endpoint
+├── web-app/            # Visual UI for managing flows/triggers
+├── execution-engine/   # n8n-like core that performs the steps
+├── model.config        # which AI model + endpoint (V1: Cloud APIs)
 ├── rules.md            # system prompt, persona, constraints
-├── memory.policy       # scope, retention, retrieval strategy
+├── memory.policy       # Hermes-Agent-inspired (proactive recall)
 ├── identity.gate       # recognition method + fallback behavior
 ├── pipeline.hooks      # pre/post processing, tool calls, filters
 ├── skills/             # pluggable capability modules
@@ -343,7 +347,7 @@ harness/
 │   ├── calendar.skill
 │   ├── alert.skill
 │   └── ...
-└── modes.policy        # adaptive sleep, wake triggers, stream modes
+└── modes.policy        # dynamic modes (customizable via Web App)
 ```
 
 **Harness hosting options:**
