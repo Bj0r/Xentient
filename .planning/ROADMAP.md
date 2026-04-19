@@ -14,7 +14,7 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 | 4: Optimization & Demo Prep | Latency + demo narrative | Not started |
 | 5: Doc Architecture Refactor | Restructure docs to bridge model | In progress |
 
-**Phase 2 Note:** The "n8n-style orchestration" vision for Phase 2 has been superseded by the bridge model. The custom memory layer (MemoryDB/FactExtractor/MemoryInjector) will be replaced by Hermes+Mem0 integration in Platform Track P1-P2. Phase 2 deliverables that still ship in the demo (voice pipeline, MQTT bridge, basic memory) are carried forward as-is.
+**Phase 2 Note:** **Phase 2 is SUPERSEDED.** The n8n-style orchestration vision has been replaced by the bridge model (see docs/VISION.md). The custom memory layer (MEM-01/02/03) will be replaced by Hermes+Mem0 integration in Platform Track P1-P2. Phase 2 deliverables that still ship in the demo (voice pipeline, MQTT bridge, basic memory) are carried forward as-is.
 
 ## Platform Track (Post-Capstone — Apr 25+)
 
@@ -25,10 +25,10 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 | P3: Mode Manager | sleep/listen/active/record state machine | +60 LOC | None |
 | P4: Space Manager | Space context + MQTT contract + permissions | +100 LOC | P3 |
 | P5: Pack Loader v2 | New handler types, space awareness | +60 LOC | P1, P4 |
-| P6: Communication Bridge | REST/WS/MQTT bridge to AI brain layer | +100 LOC | P1 |
-| P7: OpenClaw Adapter | Computer-use handler | +60 LOC | P5 |
-| P8: Archon Adapter | Basic YAML DAG workflow delegation | +50 LOC | P5 |
-| P9: Communication Bridge | REST/WS/MQTT bridge to AI brain layer | +100 LOC | P1 |
+| P6: Web Control Panel (Core Face B) | Browser UI for hardware config, pack/space/permission mgmt, integration toggles, live telemetry | +600 LOC (new surface) | P3, P4, P5 |
+| P7: Communication Bridge | REST/WS/MQTT bridge between Core and AI Brain tier | +100 LOC | P1 |
+| P8: OpenClaw Adapter | Computer-use handler (sandboxed/remote machine) | +60 LOC | P5, P7 |
+| P9: Archon Adapter | Basic YAML DAG workflow delegation | +50 LOC | P5, P7 |
 
 ## Phase Details
 
@@ -84,7 +84,7 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
   1. VISION.md exists with bridge model, integration tiers, Spaces/Modes primitives.
   2. CONTRACTS.md, PACKS.md, SPACES.md, HARDWARE.md, NON_GOALS.md all exist as L2 specs.
   3. README.md rewritten to 60-second pitch aligned with bridge model.
-  4. ROADMAP.md updated with Demo Track (frozen) + Platform Track (P1-P8).
+  4. ROADMAP.md updated with Demo Track (frozen) + Platform Track (P1-P9).
   5. NOTES.md trimmed to append-only decision log; platform/pack content extracted.
   6. All hardware decisions B1-B7 preserved verbatim in HARDWARE.md.
   7. Archon contradiction resolved (included as P9 in Platform Track, deferred in demo scope).
