@@ -16,6 +16,7 @@ static constexpr uint8_t  PERIPHERAL_TYPE_LCD    = 0x15;
 // --- MQTT topics ---
 static constexpr const char* TOPIC_ENV     = "xentient/sensors/env";
 static constexpr const char* TOPIC_MOTION  = "xentient/sensors/motion";
+static constexpr const char* TOPIC_VAD     = "xentient/sensors/vad";
 static constexpr const char* TOPIC_MODE    = "xentient/control/mode";
 static constexpr const char* TOPIC_DISPLAY = "xentient/display";
 
@@ -32,3 +33,11 @@ static constexpr uint32_t TELEMETRY_INTERVAL_MS = 5000; // publish every 5s
 static constexpr const char* MQTT_BROKER_ADDR = "192.168.1.100";
 static constexpr uint16_t     MQTT_BROKER_PORT = 1883;
 static constexpr const char* MQTT_CLIENT_ID    = "xentient-node-01";
+
+// --- WiFi credentials (set before flashing) ---
+static constexpr const char* WIFI_SSID = "your-ssid";
+static constexpr const char* WIFI_PASS = "your-password";
+
+// --- WebSocket harness connection ---
+static constexpr const char*  WS_HARNESS_HOST = "192.168.1.100"; // same host as MQTT broker
+static constexpr uint16_t     WS_HARNESS_PORT = 8765;
