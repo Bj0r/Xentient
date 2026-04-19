@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-last_updated: "2026-04-20T17:01:31Z"
+last_updated: "2026-04-20T17:35:00Z"
 progress:
   total_phases: 5
   completed_phases: 0
@@ -25,7 +25,7 @@ See: [.planning/PROJECT.md](file:///d:/Projects/Xentient/.planning/PROJECT.md) (
 
 Phase 5 complete: all doc architecture refactor plans executed. ROADMAP.md rewritten with two-track structure (Demo Track + Platform Track P1-P9). PROJECT.md and REQUIREMENTS.md updated for bridge model. NOTES.md trimmed to append-only decision log. xentient.md shrunk to ~90-line L0 pitch. Phase 2 marked SUPERSEDED.
 
-Quick task 260420-mqtt complete: MQTT pub/sub client with auto-reconnect and JSON telemetry. ESP32 publishes BME280 data to xentient/sensors/env every 5s, subscribes to xentient/control/mode and xentient/display. Exponential backoff reconnect (1s/2s/4s, 10s reset).
+Quick task 260420-4do complete: ModeManager wired into Core runtime — MQTT mode/sensor events, idle timeouts (listen 60s, active 300s), PIR wake (sleep->listen), Pipeline mode-aware audio gating, LCD face display publishing on mode transitions. ModeManager now extends EventEmitter for mode change propagation. Pipeline drops audio in sleep, processes in active, buffers in listen.
 
 ## Milestone Status
 
@@ -66,6 +66,7 @@ Quick task 260420-mqtt complete: MQTT pub/sub client with auto-reconnect and JSO
 | 260419-abs | PlatformIO firmware scaffold — Node Base I2C enumeration | 2026-04-19 | a83bb7a | [260419-abs-platformio-node-base](.planning/quick/260419-abs-platformio-node-base/) |
 | 260420-lcd | LCD 16x2 I2C driver — Core Face A output | 2026-04-20 | 13353b6 | [260420-lcd-lcd-core-face-a](.planning/quick/260420-lcd-lcd-core-face-a/) |
 | 260420-mqtt | MQTT pub/sub client + JSON telemetry protocol | 2026-04-20 | 1f959ab | [260420-mqtt-pub-sub-client](.planning/quick/260420-mqtt-pub-sub-client/) |
+| 260420-4do | Mode Manager wired into Core | 2026-04-20 | d21750b | [260420-4do-xentient-ifd](.planning/quick/260420-4do-xentient-ifd/) |
 
 ---
-*State updated: 2026-04-20 (after quick-260420-mqtt)*
+*State updated: 2026-04-20 (after quick-260420-4do)*
