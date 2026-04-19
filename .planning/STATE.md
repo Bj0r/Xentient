@@ -62,6 +62,7 @@ Phase 5 complete: all doc architecture refactor plans executed. ROADMAP.md rewri
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260419-abs | PlatformIO firmware scaffold — Node Base I2C enumeration | 2026-04-19 | a83bb7a | [260419-abs-platformio-node-base](.planning/quick/260419-abs-platformio-node-base/) |
+| 260420-lcd | LCD 16x2 I2C driver — Core Face A output | 2026-04-20 | 13353b6 | [260420-lcd-lcd-core-face-a](.planning/quick/260420-lcd-lcd-core-face-a/) |
 
 ---
-*State updated: 2026-04-19*
+*State updated: 2026-04-20*
