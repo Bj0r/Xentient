@@ -16,13 +16,19 @@
  */
 
 import mqtt from "mqtt";
-import { WebSocket } from "ws";
-import { validateMessage } from "../src/shared/contracts";
+import { validateMessage, type MessageType } from "../src/shared/contracts";
 
 const args = process.argv.slice(2);
 const broker = args.find((a) => a.startsWith("--broker="))?.split("=")[1] ?? "mqtt://127.0.0.1:1883";
 const clientId = args.find((a) => a.startsWith("--client="))?.split("=")[1] ?? "node-01";
 const profile = (args.find((a) => a.startsWith("--profile="))?.split("=")[1] ?? "quiet") as "quiet" | "chatty" | "flaky";
+
+// Topic → schema type mapping (explicit, no string-matching hacks)
+const TOPIC_SCHEMA_MAP: Record<string, MessageType> = {
+  "xentient/sensors/env": "sensor_data",
+  "xentient/sensors/motion": "sensor_data",
+  "xentient/status/mode": "mode_status",
+};
 
 const BME_INTERVAL = profile === "chatty" ? 3000 : 5000;
 const PIR_MIN = profile === "chatty" ? 15000 : 60000;
@@ -54,7 +60,7 @@ function connect() {
       if (topic === "xentient/control/mode") {
         const validated = validateMessage("mode_set", data);
         setTimeout(() => {
-          publish("xentient/status/mode", {
+          publish("xentient/status/mode", "mode_status", {
             v: 1, type: "mode_status", nodeBaseId: clientId, mode: validated.mode,
           });
         }, 200);
@@ -70,21 +76,16 @@ function connect() {
   client.on("close", () => console.log("[sim:node] Disconnected"));
 }
 
-function publish(topic: string, payload: object) {
+function publish(topic: string, type: MessageType, payload: object) {
   if (!client?.connected) return;
-  const msg = validateMessage(
-    topic.includes("sensor") ? "sensor_data" :
-    topic.includes("mode") ? "mode_status" :
-    topic.includes("motion") ? "sensor_data" : "mode_status",
-    payload,
-  );
+  const msg = validateMessage(type, payload);
   client!.publish(topic, JSON.stringify(msg));
 }
 
 // Simulated BME280: sinusoidal temp 24-26°C, humidity 55-70, pressure 1012-1014
 function publishBME() {
   const t = Date.now() / 1000;
-  publish("xentient/sensors/env", {
+  publish("xentient/sensors/env", "sensor_data", {
     v: 1, type: "sensor_data", peripheralType: 0x12,
     payload: {
       temperature: 25 + Math.sin(t / 60) * 1,
@@ -97,7 +98,7 @@ function publishBME() {
 
 // Simulated PIR: random motion events
 function publishPIR() {
-  publish("xentient/sensors/motion", {
+  publish("xentient/sensors/motion", "sensor_data", {
     v: 1, type: "sensor_data", peripheralType: 0x11,
     payload: { motion: true },
     timestamp: Date.now(),

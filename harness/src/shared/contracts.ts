@@ -118,14 +118,14 @@ export const SensorData = VersionedMessage.extend({
   type: z.literal("sensor_data"),
   peripheralType: z.number().int().min(0).max(255),
   payload: z.union([BME280Payload, PIRPayload]),
-  timestamp: z.number().int().min(0).max(4294967295), // uint32 epoch-millis
+  timestamp: z.number().int().min(0), // epoch-millis (JS-safe, ESP32 uses epoch-seconds)
 });
 
 // ── Session Complete ────────────────────────────────────────────────
 export const TurnSchema = z.object({
   role: z.enum(["user", "assistant", "system"]),
   text: z.string(),
-  startedAt: z.number().int().min(0).max(4294967295),
+  startedAt: z.number().int().min(0),
   durationMs: z.number().int().min(0),
 });
 
@@ -134,8 +134,8 @@ export const SessionComplete = VersionedMessage.extend({
   sessionId: z.string(),
   nodeBaseId: z.string(),
   spaceId: z.string(),
-  startedAt: z.number().int().min(0).max(4294967295),
-  endedAt: z.number().int().min(0).max(4294967295),
+  startedAt: z.number().int().min(0),
+  endedAt: z.number().int().min(0),
   mode: z.enum(MODE_VALUES),
   status: z.enum(["done", "error"]),
   turns: z.array(TurnSchema),
