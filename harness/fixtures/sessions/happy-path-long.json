@@ -1,0 +1,11 @@
+{
+  "session": {
+    "mode": "listen",
+    "turns": [
+      { "role": "user", "text": "Can you tell me a joke about robots?", "durationMs": 3800 },
+      { "role": "assistant", "text": "Why did the robot go on a diet? Because it had too many bytes! ...I'll be here all week. Actually no, I live here.", "durationMs": 5200 }
+    ]
+  },
+  "hasAudio": true,
+  "hasCamera": false
+}

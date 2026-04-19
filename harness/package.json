@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "sim:node": "bun run sim/node-base.ts",
+    "sim:brain": "bun run sim/brain.ts",
+    "fixtures:verify": "bun run src/shared/contracts-verify.ts",
+    "fixtures:regen-schemas": "bun run src/shared/contracts-schemas.ts"
   },
   "dependencies": {
     "ws": "^8.18.0",

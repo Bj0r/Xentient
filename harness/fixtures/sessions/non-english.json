@@ -1,0 +1,11 @@
+{
+  "session": {
+    "mode": "listen",
+    "turns": [
+      { "role": "user", "text": "Kamusta ka? Ang init ngayon.", "durationMs": 2500 },
+      { "role": "assistant", "text": "Mabuti naman! Oo, mainit talaga ngayon — 28 degrees na ang temperatura.", "durationMs": 3000 }
+    ]
+  },
+  "hasAudio": true,
+  "hasCamera": false
+}

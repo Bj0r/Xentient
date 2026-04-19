@@ -1,0 +1,11 @@
+{
+  "session": {
+    "mode": "active",
+    "turns": [
+      { "role": "user", "text": "Take a picture of the room", "durationMs": 2000 },
+      { "role": "assistant", "text": "I've captured an image. The room shows the Node Base setup on the desk with the LCD displaying a happy face.", "durationMs": 2800 }
+    ]
+  },
+  "hasAudio": true,
+  "hasCamera": true
+}

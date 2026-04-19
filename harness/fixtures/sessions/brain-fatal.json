@@ -1,0 +1,9 @@
+{
+  "session": {
+    "mode": "listen",
+    "turns": []
+  },
+  "hasAudio": false,
+  "hasCamera": false,
+  "error": { "recoverable": false, "message": "API quota exceeded — contact administrator" }
+}

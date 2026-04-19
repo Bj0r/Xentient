@@ -1,0 +1,9 @@
+{
+  "session": {
+    "mode": "listen",
+    "turns": []
+  },
+  "hasAudio": true,
+  "hasCamera": false,
+  "error": { "recoverable": true, "message": "No speech detected — VAD opened then closed with silence" }
+}

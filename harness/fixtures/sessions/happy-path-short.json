@@ -1,0 +1,11 @@
+{
+  "session": {
+    "mode": "listen",
+    "turns": [
+      { "role": "user", "text": "What's the temperature?", "durationMs": 2100 },
+      { "role": "assistant", "text": "It's currently 24.5 degrees Celsius with 65% humidity.", "durationMs": 1400 }
+    ]
+  },
+  "hasAudio": true,
+  "hasCamera": false
+}

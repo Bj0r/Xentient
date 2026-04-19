@@ -1,0 +1,11 @@
+{
+  "session": {
+    "mode": "listen",
+    "turns": [
+      { "role": "user", "text": "Turn on the living room lights", "durationMs": 2200 }
+    ]
+  },
+  "hasAudio": true,
+  "hasCamera": false,
+  "error": { "recoverable": true, "message": "Network timeout — retrying 1/3" }
+}

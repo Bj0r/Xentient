@@ -11,25 +11,32 @@ export interface HeartbeatData { nodeId: string; uptime: number; peripherals: st
 
 export class MqttClient extends EventEmitter {
   private client: mqtt.MqttClient;
-  private nodeId: string;
+  public readonly nodeId: string;
 
   constructor(brokerUrl: string, nodeId: string) {
     super();
     this.nodeId = nodeId;
     this.client = mqtt.connect(brokerUrl, {
-      clientId: `harness-${randomBytes(4).toString('hex')}`,
+      clientId: `xentient-${nodeId}-${randomBytes(4).toString('hex')}`,
       reconnectPeriod: 2000,
       keepalive: 30,
     });
 
     this.client.on('connect', () => {
       logger.info({ brokerUrl }, 'MQTT connected');
-      // Subscribe to telemetry topics (NOT audio — that goes over WebSocket)
+      // Subscribe to control + status topics per CONTRACTS.md
       const topics = [
-        `xentient/${nodeId}/audio/vad`,
-        `xentient/${nodeId}/sensors/env`,
-        `xentient/${nodeId}/status/heartbeat`,
-        `xentient/${nodeId}/camera/frame`,
+        'xentient/control/mode',
+        'xentient/control/trigger',
+        'xentient/control/space',
+        'xentient/control/pack',
+        'xentient/sensors/env',
+        'xentient/sensors/motion',
+        'xentient/status/mode',
+        'xentient/pipeline/state',
+        'xentient/session/complete',
+        'xentient/session/error',
+        'xentient/display',
       ];
       this.client.subscribe(topics, { qos: 1 }, (err) => {
         if (err) logger.error({ err }, 'Failed to subscribe');
@@ -48,34 +55,48 @@ export class MqttClient extends EventEmitter {
     });
   }
 
+  /** Publish a JSON payload to a topic. Validates against contracts if type is known. */
+  publish(topic: string, payload: object): void {
+    const data = JSON.stringify(payload);
+    this.client.publish(topic, data, { qos: 1 });
+    logger.debug({ topic, size: data.length }, 'Published');
+  }
+
+  /** Check if MQTT client is currently connected. */
+  get connected(): boolean {
+    return this.client.connected;
+  }
+
   private handleMessage(topic: string, payload: Buffer): void {
     try {
-      const nodePrefix = `xentient/${this.nodeId}`;
-      if (topic === `${nodePrefix}/audio/vad`) {
-        const event: VADEvent = JSON.parse(payload.toString());
-        logger.debug({ event }, 'VAD event received');
-        this.emit('vad', event);
-      } else if (topic === `${nodePrefix}/sensors/env`) {
-        const data: SensorData = JSON.parse(payload.toString());
+      const data = JSON.parse(payload.toString());
+      logger.debug({ topic, type: data.type }, 'Message received');
+
+      if (topic === 'xentient/sensors/env' || topic === 'xentient/sensors/motion') {
         this.emit('sensor', data);
-      } else if (topic === `${nodePrefix}/status/heartbeat`) {
-        const data: HeartbeatData = JSON.parse(payload.toString());
-        this.emit('heartbeat', data);
-      } else if (topic === `${nodePrefix}/camera/frame`) {
-        this.emit('cameraFrame', payload); // Raw JPEG bytes
+      } else if (topic === 'xentient/pipeline/state') {
+        this.emit('pipelineState', data);
+      } else if (topic === 'xentient/status/mode') {
+        this.emit('modeStatus', data);
+      } else if (topic === 'xentient/session/complete') {
+        this.emit('sessionComplete', data);
+      } else if (topic === 'xentient/session/error') {
+        this.emit('sessionError', data);
+      } else if (topic === 'xentient/display') {
+        this.emit('displayUpdate', data);
+      } else if (topic === 'xentient/control/mode') {
+        this.emit('modeCommand', data);
+      } else if (topic === 'xentient/control/trigger') {
+        this.emit('triggerPipeline', data);
+      } else {
+        logger.warn({ topic }, 'Unhandled topic');
       }
     } catch (err) {
       logger.error({ err, topic }, 'Failed to parse MQTT message');
     }
   }
 
-  /** Send control command to Node Base */
-  sendCommand(command: string, params: Record<string, unknown> = {}): void {
-    const topic = `xentient/${this.nodeId}/control/cmd`;
-    const payload = JSON.stringify({ command, params, timestamp: Date.now() });
-    this.client.publish(topic, payload, { qos: 1 });
-    logger.debug({ command }, 'Control command sent');
+  disconnect(): void {
+    this.client.end();
   }
-
-  disconnect(): void { this.client.end(); }
 }

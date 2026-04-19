@@ -1,0 +1,11 @@
+{
+  "session": {
+    "mode": "listen",
+    "turns": [
+      { "role": "assistant", "text": "I noticed movement. Hello! Is anyone there?", "durationMs": 1800 }
+    ]
+  },
+  "hasAudio": true,
+  "hasCamera": false,
+  "trigger": "pir"
+}

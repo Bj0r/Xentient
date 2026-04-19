@@ -1,0 +1,11 @@
+{
+  "session": {
+    "mode": "listen",
+    "turns": [
+      { "role": "user", "text": "Can you summarize what we talked about yesterday? I think we discussed the project timeline, the budget constraints for hardware components, and the deadline for the demo presentation. Also, I remember something about ordering more ESP32 boards from Shopee and checking the HB100 radar sensor availability. The LM358 op-amp was mentioned as an additional part needed for the Node A circuit.", "durationMs": 12000 },
+      { "role": "assistant", "text": "Here's a summary of yesterday's discussion: 1) Project timeline — demo deadline is April 24, with parallel tracks for web console and core/hardware development. 2) Budget — hardware components total around ₱2,500 for Node A, including ESP32, BME280, INMP441, MAX98357A, PIR sensor, LCD, and the HB100 radar with LM358 op-amp. 3) ESP32 boards — you planned to order 3 more from Shopee for testing. 4) HB100 radar — confirmed available, needs LM358 amplifier circuit for the analog IF output (microvolts). The op-amp costs about ₱15 with resistors and capacitors around ₱20 total. Mounting angle should be 30-45 degrees toward the water surface for FloodWatch application. 5) Demo presentation — slide deck and run-through script are pending.", "durationMs": 15000 }
+    ]
+  },
+  "hasAudio": true,
+  "hasCamera": false
+}

@@ -1,0 +1,15 @@
+{
+  "session": {
+    "mode": "active",
+    "turns": [
+      { "role": "user", "text": "Hey Xentient", "durationMs": 1500 },
+      { "role": "assistant", "text": "Hey! What's up?", "durationMs": 1200 },
+      { "role": "user", "text": "Set a timer for 5 minutes", "durationMs": 2000 },
+      { "role": "assistant", "text": "Timer set for 5 minutes. I'll let you know when it's done.", "durationMs": 1800 },
+      { "role": "user", "text": "Thanks", "durationMs": 800 },
+      { "role": "assistant", "text": "You're welcome!", "durationMs": 900 }
+    ]
+  },
+  "hasAudio": true,
+  "hasCamera": false
+}
