@@ -16,3 +16,7 @@ static constexpr int PIN_AMP_DIN   = 27;
 
 // PIR motion interrupt
 static constexpr int PIN_PIR_INT   = 13;
+
+// UART2 — ESP32-CAM link (avoids UART0/USB-serial conflict)
+static constexpr int PIN_CAM_RX    = 16;   // Node Base RX ← CAM TX
+static constexpr int PIN_CAM_TX    = 17;   // Node Base TX → CAM RX
