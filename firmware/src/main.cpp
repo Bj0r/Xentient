@@ -36,19 +36,18 @@ static void wifi_connect() {
     }
 }
 
+// VAD start → trigger_pipeline{source:"voice"} on xentient/control/trigger
+// VAD end has no wire event (harness infers end from audio stream close)
 static void publish_vad(bool active) {
-    if (!mqtt_connected()) return;
+    if (!active || !mqtt_connected()) return;
     JsonDocument doc;
-    doc["v"]    = MSG_VERSION;
-    doc["type"] = "vad";
-    JsonObject payload = doc["payload"].to<JsonObject>();
-    payload["type"]      = active ? "start" : "end";
-    payload["nodeId"]    = MQTT_CLIENT_ID;
-    payload["timestamp"] = (uint32_t)millis();
-    char buf[128];
+    doc["v"]      = MSG_VERSION;
+    doc["type"]   = "trigger_pipeline";
+    doc["source"] = TRIGGER_SOURCE_VOICE;
+    char buf[96];
     serializeJson(doc, buf, sizeof(buf));
-    mqtt_publish(TOPIC_VAD, buf, strlen(buf));
-    Serial.printf("[VAD] Published: %s\n", active ? "start" : "end");
+    mqtt_publish(TOPIC_TRIGGER, buf, strlen(buf));
+    Serial.println("[VAD] Published: trigger_pipeline source=voice");
 }
 
 // --- setup ---
