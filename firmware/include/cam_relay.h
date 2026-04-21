@@ -14,3 +14,4 @@ uint32_t cam_relay_frames_rx();
 uint32_t cam_relay_frames_tx();
 uint32_t cam_relay_crc_drops();
 uint32_t cam_relay_timeout_drops();
+uint32_t cam_relay_gap_drops();

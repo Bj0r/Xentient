@@ -15,6 +15,7 @@ static uint8_t s_camBuf[CAM_BUF_SIZE];
 static size_t   s_camBufLen      = 0;
 static uint16_t s_curFrameId    = 0;
 static uint8_t  s_curChunkTotal = 0;
+static uint8_t  s_nextChunkIdx  = 0;  // expected next chunk index
 static bool     s_reassembling  = false;
 static unsigned long s_reasmStartMs = 0;
 
@@ -22,7 +23,8 @@ static unsigned long s_reasmStartMs = 0;
 static uint32_t s_framesRx      = 0;  // complete frames received from CAM
 static uint32_t s_framesTx      = 0;  // complete frames forwarded to WS
 static uint32_t s_crcDrops      = 0;
-static uint32_t s_timeoutDrops = 0;
+static uint32_t s_timeoutDrops  = 0;
+static uint32_t s_gapDrops      = 0;  // frames dropped due to chunk sequence gaps
 
 // --- CRC-8/ITU (polynomial 0x07, init 0x00, no final XOR) ---
 // Matches ESP-CAM sender implementation exactly.
@@ -45,6 +47,7 @@ static void discard_reassembly() {
     s_camBufLen = 0;
     s_curFrameId = 0;
     s_curChunkTotal = 0;
+    s_nextChunkIdx = 0;
 }
 
 // --- Forward reassembled JPEG over shared WebSocket ---
@@ -107,6 +110,7 @@ static void process_chunk(uint16_t frameId, uint8_t chunkIdx, uint8_t chunkTotal
         s_reassembling    = true;
         s_curFrameId      = frameId;
         s_curChunkTotal   = chunkTotal;
+        s_nextChunkIdx    = 0;
         s_camBufLen       = 0;
         s_reasmStartMs    = millis();
     }
@@ -124,6 +128,16 @@ static void process_chunk(uint16_t frameId, uint8_t chunkIdx, uint8_t chunkTotal
         discard_reassembly();
         return;
     }
+
+    // Sequence gap detection
+    if (chunkIdx != s_nextChunkIdx) {
+        s_gapDrops++;
+        Serial.printf("[CAM-RELAY] Chunk gap: expected %u got %u — discarding frame %u\n",
+                      s_nextChunkIdx, chunkIdx, frameId);
+        discard_reassembly();
+        return;
+    }
+    s_nextChunkIdx++;
 
     // Buffer overflow protection
     if (s_camBufLen + dataLen > CAM_BUF_SIZE) {
@@ -193,9 +207,9 @@ void cam_relay_init() {
 void cam_relay_loop() {
     // --- Reassembly timeout ---
     if (s_reassembling && (millis() - s_reasmStartMs >= CAM_REASSEMBLY_TIMEOUT_MS)) {
+        unsigned long elapsed = (millis() - s_reasmStartMs) / 1000;
         Serial.printf("[CAM-RELAY] Timeout: discarding partial frame %u (%u bytes after %lus)\n",
-                      s_curFrameId, (unsigned)s_camBufLen,
-                      (unsigned long)CAM_REASSEMBLY_TIMEOUT_MS);
+                      s_curFrameId, (unsigned)s_camBufLen, elapsed);
         s_timeoutDrops++;
         discard_reassembly();
     }
@@ -284,3 +298,4 @@ uint32_t cam_relay_frames_rx()      { return s_framesRx; }
 uint32_t cam_relay_frames_tx()      { return s_framesTx; }
 uint32_t cam_relay_crc_drops()      { return s_crcDrops; }
 uint32_t cam_relay_timeout_drops()  { return s_timeoutDrops; }
+uint32_t cam_relay_gap_drops()      { return s_gapDrops; }
