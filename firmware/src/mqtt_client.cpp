@@ -24,7 +24,7 @@ static void mqtt_connect() {
         lcd_set_state(NodeState::LISTENING);
 
         // Subscribe to control and display topics
-        mqtt_subscribe(TOPIC_MODE);
+        mqtt_subscribe(TOPIC_MODE_SET);
         mqtt_subscribe(TOPIC_DISPLAY);
     } else {
         Serial.printf("[MQTT] Connect failed, rc=%d\n", client.state());
@@ -73,7 +73,7 @@ void mqtt_loop() {
             }
         } else {
             // All 3 retries exhausted — wait MQTT_RETRY_RESET_MS then reset counter
-            if (now - lastReconnectAttempt >= MQTT_RETRY_RESET_MS) {
+            if (now - lastReconnectAttempt >= MQTT_RETRY_CAP_MS) {
                 Serial.println("[MQTT] Resetting retry counter after backoff...");
                 retryCount = 0;
                 lastReconnectAttempt = now;

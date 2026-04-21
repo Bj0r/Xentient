@@ -11,6 +11,7 @@
 #include "i2s_mic.h"
 #include "vad.h"
 #include "ws_audio.h"
+#include "cam_relay.h"
 #include "messages.h"
 
 // --- helpers ---
@@ -81,6 +82,7 @@ void setup() {
     ws_audio_init(WS_HARNESS_HOST, WS_HARNESS_PORT);
     i2s_mic_init();
     vad_init();
+    cam_relay_init();
 
     Serial.println("[BOOT] Init complete.");
 }
@@ -94,6 +96,7 @@ static float rounded2(float v) { return round(v * 100.0F) / 100.0F; }
 void loop() {
     ws_audio_loop();
     mqtt_loop();
+    cam_relay_loop();
 
     // --- Mic capture + VAD ---
     if (i2s_mic_read(s_pcm, I2S_MIC_CHUNK_SAMPLES)) {
