@@ -4,6 +4,7 @@ dotenv.config();
 import config from "../config/default.json";
 import { MqttClient } from "./comms/MqttClient";
 import { AudioServer } from "./comms/AudioServer";
+import { CameraServer } from "./comms/CameraServer";
 import { DeepgramProvider } from "./providers/stt/DeepgramProvider";
 import { WhisperProvider } from "./providers/stt/WhisperProvider";
 import { ElevenLabsProvider } from "./providers/tts/ElevenLabsProvider";
@@ -45,13 +46,14 @@ async function main() {
 
   const mqtt = new MqttClient(process.env.MQTT_BROKER_URL ?? config.mqtt.brokerUrl, config.nodeId);
   const audioServer = new AudioServer(config.audio.wsPort);
+  const cameraServer = new CameraServer(config.camera.wsPort, config.camera.idleTimeoutMs);
   const stt = createSTTProvider();
   const tts = createTTSProvider();
   const llm = createLLMProvider();
 
   // Basic mode: direct LLM call (no memory system — Mem0 integration is post-demo)
   // Brain Router will dispatch to Hermes/Mem0/OpenClaw based on Space config
-  const getMemoryContext = async () => ({ system: "", facts: [] });
+  const getMemoryContext = async () => ({ userProfile: "", relevantEpisodes: "", extractedFacts: "" });
 
   const pipeline = new Pipeline({ stt, tts, llm, mqtt, audio: audioServer, getMemoryContext });
 
@@ -70,12 +72,18 @@ async function main() {
   pipeline.on("turnComplete", (t) => logger.info(t, "Turn complete"));
   pipeline.on("heartbeat", (h) => logger.debug(h, "Heartbeat"));
 
-  logger.info({ wsPort: config.audio.wsPort, mqtt: config.mqtt.brokerUrl }, "Core ready");
+  // Camera: AudioServer discriminates 0xCA frames → CameraServer forwards to dashboard
+  audioServer.on("cameraFrame", (frame) => cameraServer.handleFrame(frame));
+  cameraServer.on("cameraOnline", () => logger.info("Camera stream online"));
+  cameraServer.on("cameraOffline", () => logger.warn("Camera stream offline — no frames for 10s"));
+
+  logger.info({ wsPort: config.audio.wsPort, cameraPort: config.camera.wsPort, mqtt: config.mqtt.brokerUrl }, "Core ready");
 
   const shutdown = async (signal: string) => {
     logger.info({ signal }, "Shutting down gracefully...");
     modeManager.clearIdleTimer();
     mqtt.disconnect();
+    cameraServer.close();
     audioServer.close();
     process.exit(0);
   };
