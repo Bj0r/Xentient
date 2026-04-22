@@ -5,6 +5,7 @@ import config from "../config/default.json";
 import { MqttClient } from "./comms/MqttClient";
 import { AudioServer } from "./comms/AudioServer";
 import { CameraServer } from "./comms/CameraServer";
+import { ControlServer } from "./comms/ControlServer";
 import { DeepgramProvider } from "./providers/stt/DeepgramProvider";
 import { WhisperProvider } from "./providers/stt/WhisperProvider";
 import { ElevenLabsProvider } from "./providers/tts/ElevenLabsProvider";
@@ -80,7 +81,12 @@ async function main() {
   cameraServer.on("cameraOnline", () => logger.info("Camera stream online"));
   cameraServer.on("cameraOffline", () => logger.warn("Camera stream offline — no frames for 10s"));
 
-  logger.info({ wsPort: config.audio.wsPort, cameraPort: config.camera.wsPort, mqtt: config.mqtt.brokerUrl }, "Core ready");
+  // Control server — HTTP API + static files + SSE for browser test page
+  const controlPort = parseInt(process.env.CONTROL_PORT ?? "3000", 10);
+  const controlServer = new ControlServer(controlPort, mqtt, pipeline, modeManager);
+  await controlServer.start();
+
+  logger.info({ wsPort: config.audio.wsPort, cameraPort: config.camera.wsPort, controlPort, mqtt: config.mqtt.brokerUrl }, "Core ready — open http://localhost:" + controlPort);
 
   const shutdown = async (signal: string) => {
     logger.info({ signal }, "Shutting down gracefully...");
