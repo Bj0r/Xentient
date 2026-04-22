@@ -9,7 +9,7 @@ import { DeepgramProvider } from "./providers/stt/DeepgramProvider";
 import { WhisperProvider } from "./providers/stt/WhisperProvider";
 import { ElevenLabsProvider } from "./providers/tts/ElevenLabsProvider";
 import { OpenAIProvider } from "./providers/llm/OpenAIProvider";
-import { Pipeline } from "./engine/Pipeline";
+import { Pipeline, LatencyReport } from "./engine/Pipeline";
 import { ModeManager } from "./engine/ModeManager";
 import { STTProvider, TTSProvider, LLMProvider } from "./providers/types";
 import { PROTOCOL_VERSION } from "./shared/contracts";
@@ -69,6 +69,9 @@ async function main() {
   });
 
   pipeline.on("transcript", (t) => logger.info({ transcript: t }, "User said"));
+  pipeline.on("latency", (r: LatencyReport) => {
+    logger.info(r, `Latency: ${r.totalMs}ms (STT ${r.sttMs} + LLM ${r.llmTotalMs} + TTS ${r.ttsTotalMs})`);
+  });
   pipeline.on("turnComplete", (t) => logger.info(t, "Turn complete"));
   pipeline.on("heartbeat", (h) => logger.debug(h, "Heartbeat"));
 
