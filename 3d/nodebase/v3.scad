@@ -249,3 +249,62 @@ module lcd_standoffs() {
             }
     }
 }
+
+// ==========================================
+// 6. ZONE A: BATTERY CRADLE (Z=0 to 15)
+// ==========================================
+
+module battery_cradle() {
+    pL = BH_L + 2*BH_Clear;
+    pW = BH_W + 2*BH_Clear;
+    lip_h = 3.0;
+
+    // Floor plate
+    translate([0, 0, -1])
+        cube([pL, pW, 2], center=true);
+
+    // Y-axis retaining lips
+    for (s = [-1, 1]) {
+        translate([0, s * (pW/2 + Clip_T/2), lip_h/2 - 1])
+            cube([pL + 2*Clip_T, Clip_T, lip_h], center=true);
+    }
+    // X-axis retaining lips
+    for (s = [-1, 1]) {
+        translate([s * (pL/2 + Clip_T/2), 0, lip_h/2 - 1])
+            cube([Clip_T, pW + 2*Clip_T, lip_h], center=true);
+    }
+}
+
+// ==========================================
+// 7. ZONE A: POWER MODULE POCKETS
+// ==========================================
+
+module power_module_clip(mod_L, mod_W, mod_H) {
+    cL = mod_L/2 + Clip_Clear;
+    cW = mod_W/2 + Clip_Clear;
+
+    for (s = [-1, 1]) {
+        translate([0, s * (cW + Clip_T/2), mod_H/4])
+            cube([mod_L + 2*Clip_Clear + 2*Clip_T, Clip_T, mod_H/2], center=true);
+    }
+    for (s = [-1, 1]) {
+        translate([s * (cL + Clip_T/2), 0, mod_H/4])
+            cube([Clip_T, mod_W + 2*Clip_Clear + 2*Clip_T, mod_H/2], center=true);
+    }
+
+    translate([0, 0, -1])
+        cube([mod_L + 2*Clip_Clear, mod_W + 2*Clip_Clear, 2], center=true);
+}
+
+module usb_c_cutout_negative() {
+    // USB-C on collar face, aligned with TP4056 module (Y=30)
+    rotate([0, 0, 90])
+        translate([Base_Apo, 0, Collar_H / 2])
+            rotate([0, 90, 0])
+                hull() {
+                    translate([0, 0, Shell_T + 2])
+                        cube([USB_H + 2, USB_W + 2, 0.1], center=true);
+                    translate([0, 0, -(Shell_T + 2)])
+                        cube([USB_H, USB_W, 0.1], center=true);
+                }
+}
