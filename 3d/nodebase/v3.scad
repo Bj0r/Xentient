@@ -66,6 +66,7 @@ ESP_SoH     = 20.0;    // Standoff pillar height
 // --- Fastener specs ---
 M3_Hole   = 3.2;   // M3 heat-set insert hole
 M3_Boss   = 5.0;   // Slim M3 boss
+M3_Insert = 4.2;   // Heat-set insert for M3
 M2_Hole   = 2.4;   // M2 screw body
 M2_Boss   = 4.0;   // Slim M2 boss (spec says 4mm)
 
@@ -172,5 +173,79 @@ module socket_pocket_sleeve() {
         // This creates a shelf for the 30x20 JST-breakout PCB
         translate([0, 0, -Port_D + Mounting_Lip/2])
             cube([Breakout_W, Breakout_H, Mounting_Lip], center=true);
+    }
+}
+
+// ==========================================
+// 5. FRONT CENTER PORT (Top Face - LCD Display)
+// ==========================================
+
+module front_port_negative() {
+    // Pocket cutout through front face + sleeve
+    translate([0, 0, Total_Depth - Port_D / 2])
+        cube([Port_H, Port_W, Port_D + 2], center=true);
+
+    // Wire channel inward
+    translate([0, 0, Inner_Front_Z / 2 + Shell_T])
+        cube([WireCh_H, WireCh_W, Inner_Front_Z - Port_D], center=true);
+
+    // 45 deg chamfer at entry
+    translate([0, 0, Total_Depth - 0.5])
+        hull() {
+            cube([Port_H + 3, Port_W + 3, 0.1], center=true);
+            translate([0, 0, -1.5])
+                cube([Port_H, Port_W, 0.1], center=true);
+        };
+
+    // LCD bezel window (71x26mm)
+    translate([0, 0, Total_Depth + 1])
+        cube([LCD_H, LCD_W, 4], center=true);
+
+    // Breakout PCB mounting holes (same as side pockets)
+    bp_w = Breakout_W - 4;
+    bp_h = Breakout_H - 4;
+    translate([0, 0, Total_Depth - Port_D])
+        for (sx = [-1, 1], sy = [-1, 1]) {
+            translate([sx * bp_w/2, sy * bp_h/2, 0])
+                cylinder(h=Mounting_Lip + 1, d=M2_Hole, $fn=24);
+        }
+}
+
+module front_port_sleeve() {
+    // Sleeve behind front face for display sled depth
+    draft_off = Port_D * tan(1.0);
+
+    difference() {
+        hull() {
+            translate([0, 0, -0.5])
+                cube([Port_H + 2*Sleeve_Wall + 2*draft_off,
+                      Port_W + 2*Sleeve_Wall + 2*draft_off, 1], center=true);
+            translate([0, 0, -Port_D + 0.5])
+                cube([Port_H + 2*Sleeve_Wall, Port_W + 2*Sleeve_Wall, 1], center=true);
+        }
+        hull() {
+            translate([0, 0, -0.5])
+                cube([Port_H + 2*draft_off, Port_W + 2*draft_off, 1], center=true);
+            translate([0, 0, -Port_D + 0.5])
+                cube([Port_H, Port_W, 1], center=true);
+        }
+        translate([0, 0, -Port_D - 1])
+            cube([WireCh_H, WireCh_W, 4], center=true);
+
+        // Breakout PCB mounting lip
+        translate([0, 0, -Port_D + Mounting_Lip/2])
+            cube([Breakout_W, Breakout_H, Mounting_Lip], center=true);
+    }
+}
+
+module lcd_standoffs() {
+    so_h = 6.0;
+    for (sx = [-1, 1], sy = [-1, 1]) {
+        translate([sx * LCD_Mount_X / 2, sy * LCD_Mount_Y / 2, 0])
+            difference() {
+                cylinder(h=so_h, d=M3_Boss, $fn=32);
+                translate([0, 0, so_h * 0.35])
+                    cylinder(h=so_h * 0.65 + 1, d=M3_Insert, $fn=32);
+            }
     }
 }
