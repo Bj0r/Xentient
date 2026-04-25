@@ -1,9 +1,9 @@
 // ==========================================
 // Xentient Framework - Main Node Module V3
-// Scaled: 140mm base, 65mm height, stack zoning
+// Scaled: 150mm base, 90mm height, stack zoning
 // ==========================================
 // Print: PETG, 0.2mm layers, 45° overhangs (support-free)
-// Bed: Base (140mm F2F) flat on bed, rear face down
+// Bed: Base (150mm F2F) flat on bed, rear face down
 // Units: mm
 
 $fn = 128;
@@ -13,25 +13,25 @@ $fn = 128;
 // ==========================================
 
 // --- Hub Shell (Truncated Hex Pyramid) ---
-Base_F2F    = 140.0;
+Base_F2F    = 150.0;
 Front_F2F   = 60.0;
-Total_Depth = 65.0;
+Total_Depth = 90.0;
 Collar_H    = 12.0;
 Shell_T     = 3.0;
 
 // Derived geometry
 Base_R    = (Base_F2F / 2) / cos(30);     // 80.83
 Front_R   = (Front_F2F / 2) / cos(30);    // 34.64
-Pyr_H     = Total_Depth - Collar_H;        // 53
+Pyr_H     = Total_Depth - Collar_H;        // 78
 Base_Apo  = Base_F2F / 2;                  // 70
 Front_Apo = Front_F2F / 2;                 // 30
-Face_Tilt = atan((Base_Apo - Front_Apo) / Pyr_H);  // ~37.1 deg
+Face_Tilt = atan((Base_Apo - Front_Apo) / Pyr_H);  // ~27.9 deg
 
 // Inner cavity
 Inner_Base_R  = Base_R - Shell_T / cos(30);    // ~77.37
-Inner_Front_Z = Total_Depth - Shell_T;          // Z=62
-Outer_R_at_62  = Base_R + (Front_R - Base_R) * (Inner_Front_Z - Collar_H) / Pyr_H;
-Inner_Front_R2 = Outer_R_at_62 - Shell_T / cos(30);  // ~32.17
+Inner_Front_Z = Total_Depth - Shell_T;          // Z=87
+Outer_R_at_front  = Base_R + (Front_R - Base_R) * (Inner_Front_Z - Collar_H) / Pyr_H;
+Inner_Front_R2 = Outer_R_at_front - Shell_T / cos(30);  // ~32.17
 
 // --- Universal Socket Pocket ---
 Port_W       = 24.4;    // Male sled width + 0.4mm tolerance
@@ -55,6 +55,7 @@ Board_L    = 120.0;
 Board_W    = 80.0;
 Board_SoX  = 110.0;    // Standoff span X (80mm board width, ~110mm along length)
 Board_SoY  = 70.0;     // Standoff span Y (120mm board length, ~70mm along width)
+Board_Chamfer = 8.0;   // Corner chamfer to fit inside hex at Z=20
 
 // --- ESP32-WROOM-32 Dev Board ---
 ESP_BoardL  = 55.0;
@@ -316,7 +317,25 @@ module usb_c_cutout_negative() {
 module master_board_standoffs() {
     // 4x M3 standoffs for 120x80mm solder board
     // Board sits at Z=20, standoffs rise from floor
+    // Board corners chamfered 8mm to fit inside hex boundary
     so_h = 20.0;  // Floor-to-board-top height
+
+    // Board rest plate with chamfered corners (hex-safe)
+    translate([0, 0, so_h - 1])
+        difference() {
+            // Chamfered rectangle (offset for board outline)
+            hull() {
+                for (sx = [-1, 1], sy = [-1, 1]) {
+                    translate([sx * (Board_L/2 - Board_Chamfer),
+                               sy * (Board_W/2 - Board_Chamfer), 0])
+                        cylinder(h=1, r=Board_Chamfer, $fn=4);
+                }
+            }
+            // Central wire routing cutout
+            cylinder(h=3, d=30, $fn=32);
+        }
+
+    // 4x M3 standoff pillars
     for (sx = [-1, 1], sy = [-1, 1]) {
         translate([sx * Board_SoX/2, sy * Board_SoY/2, 0])
             difference() {
@@ -324,6 +343,16 @@ module master_board_standoffs() {
                 translate([0, 0, so_h * 0.35])
                     cylinder(h=so_h * 0.65 + 1, d=M3_Insert, $fn=32);
             }
+    }
+
+    // Cross-bracing between standoffs for rigidity
+    for (sx = [-1, 1]) {
+        hull() {
+            translate([sx * Board_SoX/2, -Board_SoY/2, 0])
+                cylinder(h=so_h * 0.6, d=M3_Boss, $fn=16);
+            translate([sx * Board_SoX/2, Board_SoY/2, 0])
+                cylinder(h=so_h * 0.6, d=M3_Boss, $fn=16);
+        }
     }
 }
 
@@ -355,10 +384,21 @@ module esp32_standoffs() {
 
 module ventilation_negative() {
     // Slits on faces between sensor ports
-    // Centered at Collar_H/2, through wall, 45 deg chamfered
+    // Row 1: collar level (original)
+    // Row 2: mid-body level (added for deeper 90mm body)
     for (i = [0 : Vent_N - 1]) {
         y_off = (i - (Vent_N - 1)/2) * Vent_Spc;
+        // Row 1 - collar
         translate([0, y_off, Collar_H / 2])
+            rotate([0, 90, 0])
+                hull() {
+                    translate([0, 0, Wall_Thick + 1])
+                        cube([Vent_W + 1.5, Vent_W + 1.5, 0.1], center=true);
+                    translate([0, 0, -(Wall_Thick + 1)])
+                        cube([Vent_W, Vent_W, 0.1], center=true);
+                };
+        // Row 2 - mid-body
+        translate([0, y_off, Collar_H + Pyr_H * 0.4])
             rotate([0, 90, 0])
                 hull() {
                     translate([0, 0, Wall_Thick + 1])
@@ -407,11 +447,24 @@ module xentient_hub_v3() {
             // Tapered body
             translate([0, 0, Collar_H])
                 cylinder(h=Pyr_H, r1=Base_R, r2=Front_R, $fn=6);
-            // Aesthetic ribs
+            // Aesthetic ribs (extend along collar)
             for (i = [0 : 60 : 359]) {
                 rotate([0, 0, i])
                     translate([Base_F2F/2 - 1, 0, Collar_H/2])
                         cube([4, 12, Collar_H + 2], center=true);
+            }
+
+            // Taper ribs (structural, along pyramid faces)
+            rib_count = 6;
+            for (i = [0 : 60 : 359]) {
+                rotate([0, 0, i])
+                    translate([0, 0, Collar_H + Pyr_H/2])
+                        hull() {
+                            translate([Base_F2F/2 - 2, 0, -Pyr_H/2 + 2])
+                                cube([3, 8, 4], center=true);
+                            translate([Front_F2F/2 - 1, 0, Pyr_H/2 - 2])
+                                cube([2, 6, 4], center=true);
+                        }
             }
 
             // 6x Side pocket sleeves (provide 15mm depth)
@@ -462,48 +515,64 @@ module xentient_hub_v3() {
         }
     }
 
-    // ====== INTERNAL STRUCTURE (clipped to cavity) ======
-    intersection() {
-        translate([0, 0, Shell_T + 1])
-            cylinder(h=Inner_Front_Z - Shell_T - 2,
-                     r1=inner_r_base - 1,
-                     r2=inner_r_front - 1, $fn=6);
+    // ====== MODULAR MOUNTING BOSSES (hub shell only) ======
+    // Internal plates/standoffs are SEPARATE 3D prints that screw/glue
+    // onto these bosses. See Framework-for-designing.md §7.
+    //
+    // Z-stack (90mm depth):
+    //   Zone A: Z=3-15   Battery + power modules (floor)
+    //   Gap:    Z=15-20  Wire routing
+    //   Zone B: Z=20-37  Master solder board 120x80mm
+    //   Gap:    Z=37-45  Wire routing
+    //   Zone C: Z=45-65  ESP32-WROOM-32 dev board
+    //   Gap:    Z=65-75  Wire routing to LCD
+    //   Front:  Z=75-87  LCD mount + front face
 
-        union() {
-            // Zone A Floor Plate
-            translate([0, 0, Shell_T])
-                cylinder(h=2, r=Base_R - 6, $fn=6);
-
-            // Zone A: Battery Cradle (centered, Y offset rear)
-            translate([0, -25, Shell_T + 2])
-                battery_cradle();
-
-            // Zone A: Power Modules
-            // TP4056 near USB-C wall (Y=30)
-            translate([0, 30, Shell_T + 2])
-                power_module_clip(TP4056_L, TP4056_W, TP4056_H);
-
-            // MT3608 next to TP4056
-            translate([-22, 30, Shell_T + 2])
-                power_module_clip(MT3608_L, MT3608_W, MT3608_H);
-
-            // 3.3V LDO
-            translate([20, 15, Shell_T + 2])
-                power_module_clip(LDO_L, LDO_W, LDO_H);
-
-            // Zone B: Master Board Standoffs (Z=20)
-            translate([0, 0, 20])
-                master_board_standoffs();
-
-            // Zone C: ESP32 Standoffs (Z=45)
-            translate([0, 18, 45])
-                esp32_standoffs();
-
-            // Zone C-front: LCD Mount Standoffs
-            translate([0, 0, Inner_Front_Z - 1])
-                lcd_standoffs();
-        }
+    // Zone A: 4x M3 mounting bosses (battery tray + power module plate)
+    // Located near hex wall for maximum floor width
+    for (sx = [-1, 1], sy = [-1, 1]) {
+        translate([sx * 55, sy * 40, Shell_T])
+            difference() {
+                cylinder(h=4, d=M3_Boss, $fn=24);
+                translate([0, 0, 1])
+                    cylinder(h=3.5, d=M3_Insert, $fn=24);
+            }
     }
+
+    // Zone B: 4x M3 mounting bosses (master solder board plate)
+    // Board standoff span: 110x70mm, sits at Z=20
+    for (sx = [-1, 1], sy = [-1, 1]) {
+        translate([sx * Board_SoX/2, sy * Board_SoY/2, 20])
+            difference() {
+                cylinder(h=6, d=M3_Boss, $fn=24);
+                translate([0, 0, 1])
+                    cylinder(h=5.5, d=M3_Insert, $fn=24);
+            }
+    }
+
+    // Zone C: 4x M2 mounting bosses (ESP32 dev board plate)
+    // Board standoff span: 22x48mm, sits at Z=45, Y-offset +18mm
+    for (sx = [-1, 1], sy = [-1, 1]) {
+        translate([sx * ESP_SoX/2, sy * ESP_SoY/2 + 18, 45])
+            difference() {
+                cylinder(h=6, d=M2_Boss, $fn=24);
+                translate([0, 0, 1])
+                    cylinder(h=5.5, d=M2_Hole, $fn=24);
+            }
+    }
+
+    // 3x Vertical alignment keyways (0°, 120°, 240° on cavity walls)
+    // 2mm wide × 6mm deep slots for modular plate alignment
+    for (a = [0, 120, 240]) {
+        rotate([0, 0, a])
+            translate([Base_Apo - 3, -1, Shell_T])
+                cube([3, 2, Inner_Front_Z - Shell_T - 4]);
+    }
+
+    // Front-face display sled retainer (NOT inside intersection — mounted to front wall)
+    // The LCD is a Display Cap per spec, plugs into the front center socket
+    translate([0, 0, Inner_Front_Z - 3])
+        lcd_standoffs();
 }
 
 // ==========================================

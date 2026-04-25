@@ -1,4 +1,4 @@
-Xentient Framework: Master Mechanical & 3D Printing Specification V2
+Xentient Framework: Master Mechanical & 3D Printing Specification V3
 Architecture: Distributed Hub-and-Spoke Edge AI (Truncated Hex-Pyramid Base)
 Core Pivot: 16x2 LCD is now classified as an independent, pluggable peripheral cap.
 
@@ -47,11 +47,11 @@ The Conduit Entity. It does not process AI; it powers the system and routes tele
 
 Geometry: Truncated Hexagonal Pyramid.
 
-Dimensions: * Base Width (Wall-side): 90mm flat-to-flat (Radius 45mm).
+Dimensions: * Base Width (Wall-side): 150mm flat-to-flat (Radius ~86.6mm).
 
-Front Width: 50mm flat-to-flat (Radius 25mm).
+Front Width: 60mm flat-to-flat (Radius ~34.6mm).
 
-Total Depth: 45mm.
+Total Depth: 90mm.
 
 Port Matrix: * 1x Center Front (Dedicated to the wide Display Cap).
 
@@ -146,3 +146,62 @@ These adapters plug into the Rear Universal Anchor (40mm circular recess) of the
 Wall Plate Adapter: A 40x6mm male cylinder with cross-keys that fits the hub. It flares out to a flat 60x60mm plate with four M3 countersunk holes for wall mounting. Includes a central 15mm hole if routing USB power directly through the drywall.
 
 Desk Pedestal Adapter: A weighted, wedge-shaped stand. It holds the Hub at a 15-degree upward angle for optimal desk viewing and mic pickup. Features a hollow routing channel to feed the USB-C power cable out the back of the base.
+
+6. Internal Spatial Layout Protocol
+All component placement inside the Main Node Module must respect the truncated hex-pyramid geometry. The cavity tapers from 150mm F2F (rear) to 60mm F2F (front) over 90mm depth. Components that fit at Z=0 may NOT fit at Z=45.
+
+Cavity Taper Awareness: At any Z-height, the flat-to-flat (F2F) width is: F2F(Z) = Base_F2F - (Base_F2F - Front_F2F) * (Z - Collar_H) / Pyr_H. For Z < Collar_H, F2F = Base_F2F.
+
+Hex Boundary Constraint: A rectangular component of width W and height H fits inside a hex with circumradius R only if all four corners lie inside the hex. The critical constraint is: H/2 ≤ −√3·(W/2) + √3·R. Components wider than the inscribed rectangle must have corners chamfered.
+
+Minimum Clearance Rule: No component or standoff may have less than 3mm clearance from the cavity wall on any side. If clearance falls below 2mm, increase Total_Depth or relocate the component to a wider zone.
+
+Z-Stack Zoning (90mm depth):
+Zone A (Z=3–15): Battery holder + power modules (TP4056, MT3608, LDO) on floor plate.
+Gap (Z=15–20): Wire routing.
+Zone B (Z=20–37): Master solder board (120×80mm, chamfered corners) on M3 standoffs.
+Gap (Z=37–45): Wire routing.
+Zone C (Z=45–65): ESP32-WROOM-32 dev board (55×28mm) on M2 standoffs, Y-offset +18mm.
+Gap (Z=65–75): Wire routing to LCD.
+Front (Z=75–87): LCD 16×2 display (71×26mm), mounted as a Display Cap.
+
+Floor Plan: Power modules (TP4056, MT3608) cluster near USB-C wall (Y=+30mm). Battery holder centered at Y=−25mm. Master board centered on X-axis. ESP32 offset Y=+18mm for USB-C access.
+
+7. Modular Internal Design Protocol
+Rationale: The hub shell is a complex, enclosed hex-pyramid. Printing internal plates, standoffs, and component mounts as part of the shell creates impossible overhangs and makes assembly difficult. The modular approach separates internal structure into independent, 3D-printable plates that screw or glue into mounting bosses printed on the hub shell interior.
+
+Hub Shell Scope (what stays in v3.scad):
+- Outer shell (truncated hex pyramid + collar)
+- Socket pockets (7 faces) + sleeves
+- Ventilation gills
+- Rear anchor
+- USB-C cutout
+- Aesthetic/structural ribs
+- Mounting bosses ONLY (M3/M2 heat-set inserts) on cavity walls
+- Vertical alignment keyways (3× at 0°, 120°, 240°) on cavity walls
+
+Module Definitions (separate .scad files):
+
+Zone A Tray (zone_a_tray.scad): Battery cradle floor plate with clip-in pockets for TP4056, MT3608, LDO. Screws onto 4× M3 bosses at Z=3. Aligns via keyways at 0° and 120°. Must fit within hex F2F at Z=3 (≈142mm).
+
+Zone B Plate (zone_b_plate.scad): Master solder board mounting plate with 4× M3 standoffs (110×70mm span), cross-bracing, central wire routing cutout, chamfered corners. Screws onto 4× M3 bosses at Z=20. Must fit within hex F2F at Z=20 (≈133mm).
+
+Zone C Plate (zone_c_plate.scad): ESP32-WROOM-32 mounting plate with 4× M2 standoffs (22×48mm span) and anti-rotation nub. Screws onto 4× M2 bosses at Z=45. Must fit within hex F2F at Z=45 (≈106mm).
+
+Display Cap (display_cap.scad): LCD 16×2 housing with bezel, M3 standoffs for backpack, snap-fit backplate. Plugs into front center socket per Universal Mating Protocol.
+
+Assembly Method:
+1. Print hub shell (v3.scad) with bosses and keyways.
+2. Heat-set M3/M2 brass inserts into bosses.
+3. Print Zone A tray, test-fit battery + power modules.
+4. Screw Zone A tray onto bosses at Z=3 using M3×6 screws.
+5. Wire battery leads to TP4056, then TP4056 to MT3608/LDO.
+6. Print Zone B plate, mount solder board with M3×4 screws.
+7. Screw Zone B plate onto bosses at Z=20 using M3×8 screws.
+8. Route wires through gap (Z=15–20).
+9. Print Zone C plate, mount ESP32 with M2×4 screws.
+10. Screw Zone C plate onto bosses at Z=45 using M2×6 screws.
+11. Wire JST connectors to board pads.
+12. Plug peripheral caps into side/front sockets.
+
+Fastener Standards: M3 heat-set insert (4.2mm hole, 5mm boss) for structural mounts. M2 heat-set insert (2.4mm hole, 4mm boss) for PCB mounts. Screw lengths: M3×6 (tray), M3×8 (plate), M2×4 (PCB), M2×6 (plate).
