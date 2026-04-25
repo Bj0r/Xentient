@@ -1,27 +1,25 @@
-# Xentient NodeBase V3.1 — Specification Sheet
+# Xentient NodeBase V3 — Specification Sheet
 
-**Version:** 3.1 (Atrium + Shell Features Restored)  
+**Version:** 3.0 (Clean Atrium)  
 **File:** `v3.scad`  
 **Date:** 2026-04-25  
-**Status:** Shell geometry complete with rail slots, keyways, pits, and landing pads. Interior modules and peripherals in progress.
+**Status:** Shell is a clean hollow — NO interior features printed. Everything interior is a separate print glued in.
 
 ---
 
-## 1. What V3.1 Is
+## 1. What V3 Is
 
-A **hollow shell with essential mounting features** — the truncated hex-pyramid hub with port pockets, sleeves, ventilation, USB-C cutout, rear anchor, PLUS rail slots, alignment keyways, reference pits, and landing pads. Interior plates (Zone A/B/C trays) remain separate module files.
+A **clean hollow shell** — the truncated hex-pyramid hub with port pockets, sleeves, ventilation, USB-C cutout, rear anchor, and collar ribs. **Nothing else is in the print.** All interior structure (rail guides, keyways, landing pads, zone plates, reference markers) are **separate .scad files** that you print and glue in.
 
 ### Design Intent
 
-The shell provides the geometry for both assembly paths:
-- **Path A (Printed Plates):** Print Zone A/B/C tray/plate modules that slide into rail slots and screw onto bosses. Keyways provide angular orientation.
-- **Path B (Glue-In Standoffs):** Skip printed plates. Glue physical M3/M2 standoffs onto landing pads at reference pit locations. Faster for one-off prototypes.
-
-Both paths require the shell to be printed first, then interior components installed.
+The shell is just the body. Every interior feature is a separate print you glue into position. The spec tells you:
+- **What to print** (which files, how many copies)
+- **Where to glue** (position on inner wall, Z-height)
 
 ---
 
-## 2. What Is IN the Print (V3 Shell)
+## 2. What Is IN the Shell Print
 
 | Feature | Spec | Status |
 |---------|------|--------|
@@ -36,145 +34,138 @@ Both paths require the shell to be printed first, then interior components insta
 | Rear anchor pocket | 40mm dia, 6mm deep, anti-rotation cross-keys | ✅ Done |
 | Collar aesthetic ribs | 6× at 0°,60°,120°,180°,240°,300° | ✅ Done |
 | Breakout PCB mounting lips | 2mm flange, M2 holes in each pocket sleeve | ✅ Done |
-| Rail slots (6× at hex vertices) | 3.5mm wide × 2mm deep, collar zone Z=3–12 | ✅ Done (V3.1) |
-| Alignment keyways (3×) | 1.6mm grooves at 0°, 120°, 240° | ✅ Done (V3.1) |
-| Reference pits (Zone A/B/C) | 0.5mm deep × 1.5mm dia dimples | ✅ Done (V3.1) |
-| Landing pads (Zone B) | 8mm dia × 0.5mm raised, Path B glue targets | ✅ Done (V3.1) |
+
+**That's it. 11 features. Nothing else is in v3.scad.**
 
 ---
 
-## 3. What Is NOT in the Print (Separate Modules)
+## 3. Interior Prints — What to Print and Where to Glue
 
-These remain as **separate .scad files** — not printed as part of the shell.
+### 3.1 Rail Guide Strips
 
-| Feature | File | Why Separate | Status |
-|---------|------|-------------|--------|
-| Zone A tray (battery/power) | `zone_a_tray.scad` | Needs clip-in pockets, slides into rail slots | ⬜ Not started |
-| Zone B plate (master board) | `zone_b_plate.scad` | 120×80mm flat mount, can't be glued standoffs | ⬜ Not started |
-| Zone C plate (ESP32) | `zone_c_plate.scad` | Board mount + anti-rotation, slides into rail slots | ⬜ Not started |
-| Battery cradle | Part of `zone_a_tray.scad` | Integrated into tray | ⬜ Not started |
-| Power module clips | Part of `zone_a_tray.scad` | Integrated into tray | ⬜ Not started |
-| Master board standoffs | Part of `zone_b_plate.scad` | Integrated into plate | ⬜ Not started |
-| ESP32 standoffs | Part of `zone_c_plate.scad` | Integrated into plate | ⬜ Not started |
-| LCD standoffs | `caps/housing_display.scad` | Part of Display Cap | ✅ Draft |
-| Power module clips (TP4056, MT3608, LDO) | Part of `zone_a_tray.scad` | Integrated into tray | ⬜ Not started |
+| | |
+|---|---|
+| **File** | `interior/rail_guides.scad` |
+| **Print count** | **6** (one per hex vertex) |
+| **Glue position** | Inner wall at 0°, 60°, 120°, 180°, 240°, 300° |
+| **Glue zone** | Z=3 to Z=12 (collar only, wall ≥ 3mm thick) |
+| **Adhesive** | Cyanoacrylate on flat back, scuff wall first |
+| **Purpose** | Creates channel for Zone A/B/C plate edges to slide into |
+
+### 3.2 Alignment Keyway Strips
+
+| | |
+|---|---|
+| **File** | `interior/keyway_strips.scad` |
+| **Print count** | **3** |
+| **Glue position** | Inner wall at 0°, 120°, 240° |
+| **Glue zone** | Z=3 to Z=87 (full interior height) |
+| **Adhesive** | Cyanoacrylate on flat back, scuff wall first |
+| **Purpose** | Angular orientation — plates have matching grooves |
+
+### 3.3 Landing Pads (Path B only)
+
+| | |
+|---|---|
+| **File** | `interior/landing_pads.scad` |
+| **Print count** | **4** |
+| **Glue position** | (±57, ±37) at Z=20 on inner cavity wall |
+| **Adhesive** | Cyanoacrylate, scuff pad back + wall, then glue M3 standoff on top |
+| **Purpose** | Flat glue surface for physical M3 standoffs (Zone B master board) |
+
+### 3.4 Reference Markers
+
+| | |
+|---|---|
+| **File** | `interior/reference_markers.scad` |
+| **Print count** | **10** (3 Zone A + 4 Zone B + 3 Zone C) |
+| **Glue positions** | See table below |
+| **Adhesive** | Small dab of cyanoacrylate |
+| **Purpose** | Marks exact mounting coordinates — pilot hole guides for drill/glue |
+
+**Reference Marker Glue Positions:**
+
+| Zone | Count | Coordinates (X, Y, Z) | What It Marks |
+|------|-------|----------------------|--------------|
+| A | 3 | (0, -25, 3), (15, 30, 3), (-15, 30, 3) | Battery center, TP4056, MT3608 |
+| B | 4 | (±57, ±37, 20) | Master board M3 standoff corners |
+| C | 3 | (±11, 42, 45), (0, 18, 45) | ESP32 M2 standoff positions |
+
+### 3.5 Zone A Tray (Battery + Power)
+
+| | |
+|---|---|
+| **File** | `interior/zone_a_tray.scad` |
+| **Print count** | **1** |
+| **Mount** | Slides into rail guide channels at Z=3, or glue directly to floor |
+| **Purpose** | Battery cradle (18650) + TP4056/MT3608/LDO clips + wire chimney |
+| **Cannot replace with glued standoffs** | Needs clip-in pockets with retaining lips |
+
+### 3.6 Zone B Plate (Master Solder Board)
+
+| | |
+|---|---|
+| **File** | `interior/zone_b_plate.scad` |
+| **Print count** | **1** |
+| **Mount** | Slides into rail guide channels at Z=20, or rests on glued standoffs at landing pads |
+| **Purpose** | 120×80mm board mount, M3 standoffs, cross-bracing, wire chimney |
+| **Cannot replace with glued standoffs** | Board too large (120×80mm) for standalone standoffs — needs plate connecting them |
+
+### 3.7 Zone C Plate (ESP32)
+
+| | |
+|---|---|
+| **File** | `interior/zone_c_plate.scad` |
+| **Print count** | **1** |
+| **Mount** | Slides into rail guides at Z=45, or rests on glued M2 standoffs |
+| **Purpose** | ESP32-WROOM-32 dev board mount, M2 standoffs, anti-rotation nub, wire chimney |
 
 ---
 
-## 4. Shell Features Already Added Back (V3.1)
+## 4. Total Print List for NodeBase Interior
 
-These subtractive/additive features were restored in V3.1. They must be IN the shell because plates slide into them or they serve as glue targets.
-
-### 4.1 Rail Slots ✅ DONE
-- **Location:** 6× hex vertices (0°, 60°, 120°, 180°, 240°, 300°)
-- **Spec:** 3.5mm wide × 2mm deep grooves, collar zone only (Z=3 to Z=12)
-- **Purpose:** Path A plates slide into these for angular alignment
-
-### 4.2 Alignment Keyways ✅ DONE
-- **Location:** 3× grooves at 0°, 120°, 240° on cavity walls
-- **Spec:** 1.6mm wide × 1.6mm deep subtractive grooves
-- **Purpose:** Angular orientation for all plates regardless of assembly path
-
-### 4.3 Reference Pits ✅ DONE
-- **Location:** Zone A/B/C mounting coordinates
-- **Spec:** 0.5mm deep × 1.5mm diameter subtractive dimples
-- **Purpose:** Easier to locate with drill/glue tip than additive bumps. Path B glue targets.
-
-### 4.4 Landing Pads ✅ DONE (Path B)
-- **Location:** Zone B standoff coordinates (±57, ±37) at Z=20
-- **Spec:** 8mm diameter × 0.5mm raised circles on inner cavity wall
-- **Purpose:** Flat glue surfaces for physical M3 standoffs
-
-### 4.4 Landing Pads (Path B glue targets)
-
-- **Location:** Zone B standoff coordinates (±57, ±37) at Z=20
-- **Spec:** 8mm diameter, 0.5mm raised circles on cavity wall
-- **Why in shell:** Flat glue surfaces for physical M3 standoffs
-- **Priority:** P2 — Path B only; Path A uses printed bosses
+| File | Prints | Material | Time est. |
+|------|--------|----------|-----------|
+| `v3.scad` (shell) | 1 | PETG | ~8-12h |
+| `interior/rail_guides.scad` | 6 | PETG | ~15min ea |
+| `interior/keyway_strips.scad` | 3 | PETG | ~20min ea |
+| `interior/landing_pads.scad` | 4 | PETG | ~5min ea |
+| `interior/reference_markers.scad` | 10 | PETG | ~3min ea |
+| `interior/zone_a_tray.scad` | 1 | PETG | ~1.5h |
+| `interior/zone_b_plate.scad` | 1 | PETG | ~2h |
+| `interior/zone_c_plate.scad` | 1 | PETG | ~1h |
 
 ---
 
 ## 5. Parts That CANNOT Be Replaced by Glued Standoffs
 
-These components need **printed plates/trays**, not just glue-in standoffs:
-
-| Part | Why Printed, Not Glued | Status |
-|------|----------------------|--------|
-| **Zone B Plate** (master board) | Board is 120×80mm — too large for 4 standalone standoffs to hold rigidly without a plate connecting them. Needs cross-bracing and a flat mounting surface with chamfered corners. | ⬜ Not started |
-| **Zone A Tray** | Battery holder needs clip-in pockets with retaining lips. TP4056/MT3608/LDO need positioning clips. A flat plate is the only way to locate these precisely. | ⬜ Not started |
-| **Zone C Plate** | ESP32 board needs precise 4× M2 standoff positions + anti-rotation nub. Could use glue-in standoffs for Path B, but printed plate is more reliable. | ⬜ Not started |
-
-### Parts That CAN Use Glued Standoffs (Path B)
-
-| Part | Path B Approach | Tradeoff |
-|------|----------------|----------|
-| ESP32 (Zone C) | Glue M2 standoffs at reference pit locations | Less precise alignment, but works |
-| LCD (Display Cap) | Printed separately as a cap — not in shell | Same for both paths |
+| Part | Why Printed, Not Glued |
+|------|----------------------|
+| **Zone B Plate** | 120×80mm board — too large for 4 standalone standoffs. Needs cross-bracing and flat mounting surface. |
+| **Zone A Tray** | Battery holder needs clip-in pockets with retaining lips. Power modules need positioning clips. |
+| **Zone C Plate** | Can technically use glued standoffs, but printed plate is more reliable. |
 
 ---
 
-## 6. Fit-In Parts Checklist
+## 6. Hardware (Not Printed)
 
-### Hardware (Not Printed)
-
-- [ ] 4× M3 heat-set brass inserts (Zone A bosses, if Path A)
-- [ ] 4× M3 heat-set brass inserts (Zone B bosses, if Path A)
-- [ ] 4× M2 heat-set brass inserts (Zone C, if Path A)
+- [ ] 4× M3 heat-set brass inserts (Zone B plate standoffs)
+- [ ] 4× M2 heat-set brass inserts (Zone C plate standoffs)
 - [ ] 4× M2 heat-set brass inserts (LCD, in Display Cap)
-- [ ] M3×6 screws (Zone A tray → shell)
-- [ ] M3×8 screws (Zone B plate → shell)
+- [ ] M3×6 screws (Zone A tray)
+- [ ] M3×8 screws (Zone B plate)
 - [ ] M2×4 screws (PCB mounts)
-- [ ] M2×6 screws (Zone C plate → shell)
-- [ ] 6× JST XH 2.54mm female headers (per socket)
-- [ ] 1× JST XH 2.54mm female header (front display socket)
+- [ ] M2×6 screws (Zone C plate)
+- [ ] 7× JST XH 2.54mm female headers (6 side + 1 front)
 - [ ] 18650 battery holder (clip-in, ~78×22×19mm)
-- [ ] Nylon or brass M3 standoffs (Path B: 4× for Zone B, glue-in)
-- [ ] Nylon or brass M2 standoffs (Path B: 4× for Zone C, glue-in)
-- [ ] Cyanoacrylate (super glue) + 120-grit sandpaper (Path B only)
-- [ ] PETG-specific plastic cement (optional, for permanent bonds)
-
-### Printed Modules (Separate .scad Files)
-
-- [ ] `zone_a_tray.scad` — Battery cradle + power module clips + wire chimney
-- [ ] `zone_b_plate.scad` — Master board mount + cross-brace + wire chimney + chamfered corners
-- [ ] `zone_c_plate.scad` — ESP32 mount + anti-rotation nub + wire chimney
-- [ ] `display_cap.scad` — LCD 16×2 housing + bezel + snap-fit backplate
-
-### Peripheral Caps (Separate .scad Files — See §4 of Framework)
-
-- [ ] `housing_listen.scad` — INMP441 MEMS mic (low-profile dome, pinhole array)
-- [ ] `housing_speak.scad` — MAX98357A + 3W 8Ω speaker (trapezoidal flare, thermal divider)
-- [ ] `housing_climate.scad` — BME280 (vented standoff box, 15mm extension, gill slits)
-- [ ] `housing_motion.scad` — HC-SR501 PIR (recessed shroud, 15.5mm lens cutout, adjustment holes)
-- [ ] `housing_sight.scad` — ESP32-CAM (articulated ball joint head, lens cutout, thin antenna wall)
-- [ ] `housing_display.scad` — LCD 16×2 + PCF8574 (flared monitor, 75×30mm bezel, snap-fit)
-
-### Anchor Adapters (Separate .scad Files — See §5 of Framework)
-
-- [ ] `anchor_wall_plate.scad` — 40×6mm male cylinder → 60×60mm wall plate
-- [ ] `anchor_desk_pedestal.scad` — Weighted wedge, 15° tilt, cable routing
+- [ ] Nylon or brass M3 standoffs (Path B: 4× for Zone B)
+- [ ] Nylon or brass M2 standoffs (Path B: 4× for Zone C)
+- [ ] Cyanoacrylate + 120-grit sandpaper
+- [ ] PETG-specific plastic cement (optional, permanent bonds)
 
 ---
 
-## 7. Assembly Path Decision Matrix
-
-| Step | Path A (Printed Plates) | Path B (Glue-In Standoffs) |
-|------|------------------------|---------------------------|
-| 1 | Print shell with rail slots, keyways, bosses | Print shell with landing pads, reference pits |
-| 2 | Heat-set M3/M2 inserts into bosses | Scuff landing pads with sandpaper |
-| 3 | Print Zone A tray, test-fit | Glue M3 standoffs at Zone B coords |
-| 4 | Slide Zone A tray into rail slots at Z=3 | Glue battery holder to floor (Y=−25mm) |
-| 5 | Wire battery → TP4056 → MT3608/LDO | Glue TP4056/MT3608 near USB-C wall |
-| 6 | Print Zone B plate, mount board | Mount board on glued standoffs |
-| 7 | Slide Zone B plate into rail slots at Z=20 | Glue M2 standoffs at Zone C coords |
-| 8 | Route wires through chimney | Wire and assemble |
-| 9 | Print Zone C plate, mount ESP32 | — |
-| 10 | Slide Zone C plate, secure M2×6 | — |
-| 11 | Wire JST connectors | — |
-
----
-
-## 8. Print Settings
+## 7. Print Settings
 
 | Setting | Value |
 |---------|-------|
@@ -189,7 +180,7 @@ These components need **printed plates/trays**, not just glue-in standoffs:
 
 ---
 
-## 9. Port Assignment Reference
+## 8. Port Assignment Reference
 
 | Face Angle | Peripheral | JST Pins | Notes |
 |-----------|-----------|----------|-------|
