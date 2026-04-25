@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { randomBytes } from 'crypto';
 import pino from 'pino';
 
-const logger = pino({ name: 'mqtt-client' });
+const logger = pino({ name: 'mqtt-client' }, process.stderr); // GAP-11/T-22: stderr for MCP stdio safety
 
 export interface SensorData { temp: number; humidity: number; nodeId: string; }
 export interface HeartbeatData { nodeId: string; uptime: number; peripherals: string[]; }

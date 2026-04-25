@@ -30,7 +30,7 @@ import {
 } from "../shared/contracts";
 import pino from "pino";
 
-const logger = pino({ name: "mode-manager" });
+const logger = pino({ name: "mode-manager" }, process.stderr); // GAP-11/T-22: stderr for MCP stdio safety
 
 const IDLE_TIMEOUTS: Record<Mode, number | null> = {
   sleep: null,

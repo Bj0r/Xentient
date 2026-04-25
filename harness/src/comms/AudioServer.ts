@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import pino from 'pino';
 import { AUDIO_WS_PREFIX, CAMERA_WS_PREFIX } from '../shared/contracts';
 
-const logger = pino({ name: 'audio-server' });
+const logger = pino({ name: 'audio-server' }, process.stderr); // GAP-11/T-22: stderr for MCP stdio safety
 
 const MAX_CAMERA_FRAME_SIZE = 32 * 1024; // 32KB ceiling (QQVGA q10 ~3KB)
 
