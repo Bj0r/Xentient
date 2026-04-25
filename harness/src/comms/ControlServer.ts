@@ -115,20 +115,17 @@ export class ControlServer extends EventEmitter {
     }
 
     // ── API Routes ────────────────────────────────────────────────
+    // VAD trigger — publishes to xentient/control/trigger (matches firmware path)
     if (url === "/api/vad" && method === "POST") {
       const body = await this.readBody(req);
-      this.mqtt.publish("xentient/sensors/vad", {
+      const vadType = (body.type as string) ?? "start";
+      this.mqtt.publish("xentient/control/trigger", {
         v: 1,
-        type: "sensor_data",
-        peripheralType: 0x13, // INMP441 (mic) — VAD is from audio processing
-        payload: { type: body.type ?? "start", nodeId: body.nodeId ?? "test-browser", timestamp: Date.now() },
-        timestamp: Date.now(),
+        type: "trigger_pipeline",
+        source: "web",
+        ...(vadType === "end" ? { stage: "end" } : {}),
       });
-      // Also directly emit VAD event for local pipeline
-      if (body.type === "start" || body.type === "end") {
-        this.mqtt.emit("vad" as never, { type: body.type, nodeId: body.nodeId ?? "test-browser", timestamp: Date.now() });
-      }
-      this.sendJSON(res, 200, { ok: true, vad: body.type });
+      this.sendJSON(res, 200, { ok: true, vad: vadType });
       return;
     }
 
