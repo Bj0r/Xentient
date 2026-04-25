@@ -504,127 +504,17 @@ module xentient_hub_v3() {
                 translate([Base_Apo, 0, 0])
                     ventilation_negative();
         }
-
-        // ====== RAIL SLOTS (subtractive channels at hex vertices, collar zone only) ======
-        // 3.5mm wide x 2mm deep grooves for plate edge insertion
-        // Only in collar zone (Z=3 to Z=12) where wall is thick enough
-        for (a = [0 : 60 : 300]) {
-            rotate([0, 0, a])
-                hull() {
-                    translate([Base_Apo - 1, 0, Shell_T + 1])
-                        cube([2, 3.5, 1], center=true);
-                    translate([Base_Apo - 1, 0, Collar_H - 1])
-                        cube([2, 3.5, 1], center=true);
-                }
-        }
-
-        // ====== ALIGNMENT KEYWAYS (subtractive grooves at 0°, 120°, 240°) ======
-        for (a = [0, 120, 240]) {
-            rotate([0, 0, a])
-                translate([Base_Apo - 2.5, 0, Shell_T + 1])
-                    cube([2, 3.5, Collar_H - Shell_T - 2], center=true);
-        }
-
-        // ====== REFERENCE DIMPLES (subtractive pits — drilling/gluing template) ======
-        // 0.5mm deep × 1.5mm diameter depressions
-        // Zone B Path B standoff markers (±57, ±37 for manual standoff placement)
-        for (sx = [-1, 1], sy = [-1, 1]) {
-            translate([sx * 57, sy * 37, 20])
-                cylinder(h=0.5, d=1.5, $fn=12);
-        }
-        // Zone B center marker
-        translate([0, 0, 20])
-            cylinder(h=0.5, d=1.5, $fn=12);
-        // Zone C center marker
-        translate([0, 18, 45])
-            cylinder(h=0.5, d=1.5, $fn=12);
-        // Zone A battery center
-        translate([0, -25, Shell_T])
-            cylinder(h=0.5, d=1.5, $fn=12);
-        // Zone A power cluster center
-        translate([-11, 30, Shell_T])
-            cylinder(h=0.5, d=1.5, $fn=12);
     }
 
-    // ====== MODULAR MOUNTING BOSSES (hub shell only) ======
-    // Internal plates/standoffs are SEPARATE 3D prints that screw/glue
-    // onto these bosses. See Framework-for-designing.md §7.
-    //
-    // Z-stack (90mm depth):
-    //   Zone A: Z=3-15   Battery + power modules (floor)
-    //   Gap:    Z=15-20  Wire routing
-    //   Zone B: Z=20-37  Master solder board 120x80mm
-    //   Gap:    Z=37-45  Wire routing
-    //   Zone C: Z=45-65  ESP32-WROOM-32 dev board
-    //   Gap:    Z=65-75  Wire routing to LCD
-    //   Front:  Z=75-87  LCD mount + front face
-    //
-    // Two assembly paths (see §7):
-    //   Path A: Print zone plates, slide into rail slots, screw onto bosses
-    //   Path B: Skip plates, glue physical standoffs to landing pads
-
-    // Zone A: 4x M3 mounting bosses (battery tray + power module plate)
-    for (sx = [-1, 1], sy = [-1, 1]) {
-        translate([sx * 55, sy * 40, Shell_T])
-            difference() {
-                cylinder(h=4, d=M3_Boss, $fn=24);
-                translate([0, 0, 1])
-                    cylinder(h=3.5, d=M3_Insert, $fn=24);
-            }
-    }
-
-    // Zone B: 4x M3 mounting bosses (Path A only — use landing pads for Path B)
-    // Uncomment for Path A assembly:
-    // for (sx = [-1, 1], sy = [-1, 1]) {
-    //     translate([sx * Board_SoX/2, sy * Board_SoY/2, 20])
-    //         difference() {
-    //             cylinder(h=6, d=M3_Boss, $fn=24);
-    //             translate([0, 0, 1])
-    //                 cylinder(h=5.5, d=M3_Insert, $fn=24);
-    //         }
-    // }
-
-    // Zone C: 4x M2 mounting bosses (Path A only — use landing pads for Path B)
-    // Uncomment for Path A assembly:
-    // for (sx = [-1, 1], sy = [-1, 1]) {
-    //     translate([sx * ESP_SoX/2, sy * ESP_SoY/2 + 18, 45])
-    //         difference() {
-    //             cylinder(h=6, d=M2_Boss, $fn=24);
-    //             translate([0, 0, 1])
-    //                 cylinder(h=5.5, d=M2_Hole, $fn=24);
-    //         }
-    // }
-
-    // Rail slots and keyways are now SUBTRACTIVE (inside the difference() block)
-    // See the difference() block above for rail slots and alignment keyways
-
-    // Flat "Landing Pads" for glue-in standoffs (Path B assembly)
-    // 8mm diameter, 0.5mm raised circles on cavity wall surfaces
-    // Zone B: at ±55, ±35 at Z=20 (master board standoff coordinates)
-    for (sx = [-1, 1], sy = [-1, 1]) {
-        translate([sx * Board_SoX/2, sy * Board_SoY/2, 20])
-            cylinder(h=0.5, d=8, $fn=24);
-    }
-
-    // Zone C landing pads
-    for (sx = [-1, 1], sy = [-1, 1]) {
-        translate([sx * ESP_SoX/2, sy * ESP_SoY/2 + 18, 45])
-            cylinder(h=0.5, d=8, $fn=24);
-    }
-
-    // Zone A landing pads (floor level, for battery/power glue-down)
-    for (sx = [-1, 1], sy = [-1, 1]) {
-        translate([sx * 55, sy * 40, Shell_T])
-            cylinder(h=0.5, d=8, $fn=24);
-    }
-
-    // Reference dimples are now SUBTRACTIVE (inside the difference() block)
-    // See the difference() block above for pit-style dimples
-
-    // Front-face display sled retainer (NOT inside intersection — mounted to front wall)
-    // The LCD is a Display Cap per spec, plugs into the front center socket
-    translate([0, 0, Inner_Front_Z - 3])
-        lcd_standoffs();
+    // ====== OPEN ATRIUM — no internal content ======
+    // All bosses, landing pads, cradles, standoffs, dimples, and
+    // rail slots removed. Shell is a clean hollow with only:
+    //   - Port pockets + sleeves (6 side + 1 front)
+    //   - USB-C cutout
+    //   - Ventilation gills
+    //   - Rear anchor
+    //   - Aesthetic collar ribs
+    // Interior mounting will be designed separately.
 }
 
 // ==========================================
