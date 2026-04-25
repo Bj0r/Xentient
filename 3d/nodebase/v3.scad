@@ -527,9 +527,12 @@ module xentient_hub_v3() {
     //   Zone C: Z=45-65  ESP32-WROOM-32 dev board
     //   Gap:    Z=65-75  Wire routing to LCD
     //   Front:  Z=75-87  LCD mount + front face
+    //
+    // Two assembly paths (see §7):
+    //   Path A: Print zone plates, slide into rail slots, screw onto bosses
+    //   Path B: Skip plates, glue physical standoffs to landing pads
 
     // Zone A: 4x M3 mounting bosses (battery tray + power module plate)
-    // Located near hex wall for maximum floor width
     for (sx = [-1, 1], sy = [-1, 1]) {
         translate([sx * 55, sy * 40, Shell_T])
             difference() {
@@ -540,7 +543,6 @@ module xentient_hub_v3() {
     }
 
     // Zone B: 4x M3 mounting bosses (master solder board plate)
-    // Board standoff span: 110x70mm, sits at Z=20
     for (sx = [-1, 1], sy = [-1, 1]) {
         translate([sx * Board_SoX/2, sy * Board_SoY/2, 20])
             difference() {
@@ -551,7 +553,6 @@ module xentient_hub_v3() {
     }
 
     // Zone C: 4x M2 mounting bosses (ESP32 dev board plate)
-    // Board standoff span: 22x48mm, sits at Z=45, Y-offset +18mm
     for (sx = [-1, 1], sy = [-1, 1]) {
         translate([sx * ESP_SoX/2, sy * ESP_SoY/2 + 18, 45])
             difference() {
@@ -561,13 +562,76 @@ module xentient_hub_v3() {
             }
     }
 
+    // 6x Internal vertical corner ribs with rail slots
+    // At each hex vertex, a rib runs floor-to-front with a 3.5mm slot
+    // for plate edge insertion. Locks X/Y, screw/glue locks Z.
+    for (a = [0 : 60 : 300]) {
+        rib_base_r = Base_R - Shell_T/cos(30) - 1;
+        rib_front_r = Front_R - Shell_T/cos(30) + (Base_R - Front_R) * Collar_H / Pyr_H + 1;
+        rotate([0, 0, a])
+            translate([rib_base_r, 0, 0])
+                hull() {
+                    translate([0, 0, Shell_T + 1])
+                        cube([4, 4, 1], center=true);
+                    translate([rib_base_r - rib_front_r, 0, Inner_Front_Z - 1])
+                        cube([3, 3, 1], center=true);
+                }
+    }
+
+    // Rail slots in each rib (3.5mm wide channel for plate edges)
+    for (a = [0 : 60 : 300]) {
+        rib_base_r = Base_R - Shell_T/cos(30) - 1;
+        rib_front_r = Front_R - Shell_T/cos(30) + (Base_R - Front_R) * Collar_H / Pyr_H + 1;
+        rotate([0, 0, a])
+            translate([rib_base_r - 0.5, 0, 0])
+                hull() {
+                    translate([0, 0, Shell_T + 2])
+                        cube([1.5, 3.5, 1], center=true);
+                    translate([rib_base_r - rib_front_r, 0, Inner_Front_Z - 2])
+                        cube([1.5, 3.5, 1], center=true);
+                }
+    }
+
     // 3x Vertical alignment keyways (0°, 120°, 240° on cavity walls)
-    // 2mm wide × 6mm deep slots for modular plate alignment
     for (a = [0, 120, 240]) {
         rotate([0, 0, a])
             translate([Base_Apo - 3, -1, Shell_T])
                 cube([3, 2, Inner_Front_Z - Shell_T - 4]);
     }
+
+    // Flat "Landing Pads" for glue-in standoffs (Path B assembly)
+    // 8mm diameter, 0.5mm raised circles on cavity wall surfaces
+    // Zone B: at ±57, ±37 at Z=20 (master board standoff coordinates)
+    for (sx = [-1, 1], sy = [-1, 1]) {
+        translate([sx * Board_SoX/2, sy * Board_SoY/2, 20])
+            cylinder(h=0.5, d=8, $fn=24);
+    }
+
+    // Zone C landing pads
+    for (sx = [-1, 1], sy = [-1, 1]) {
+        translate([sx * ESP_SoX/2, sy * ESP_SoY/2 + 18, 45])
+            cylinder(h=0.5, d=8, $fn=24);
+    }
+
+    // Zone A landing pads (floor level, for battery/power glue-down)
+    for (sx = [-1, 1], sy = [-1, 1]) {
+        translate([sx * 55, sy * 40, Shell_T])
+            cylinder(h=0.5, d=8, $fn=24);
+    }
+
+    // Reference dimples (1mm pips) — drilling/gluing template
+    // Zone B center marker
+    translate([0, 0, 20])
+        cylinder(h=0.8, d=1, $fn=12);
+    // Zone C center marker
+    translate([0, 18, 45])
+        cylinder(h=0.8, d=1, $fn=12);
+    // Zone A battery center
+    translate([0, -25, Shell_T])
+        cylinder(h=0.8, d=1, $fn=12);
+    // Zone A power cluster center
+    translate([-11, 30, Shell_T])
+        cylinder(h=0.8, d=1, $fn=12);
 
     // Front-face display sled retainer (NOT inside intersection — mounted to front wall)
     // The LCD is a Display Cap per spec, plugs into the front center socket
