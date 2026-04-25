@@ -17,7 +17,7 @@ All caps share the same base dimensions per Framework §2:
 | Insertion depth | 10.0mm | Matches female pocket depth |
 | Draft angle | 1° | Wedge fit, no binding |
 | Wire channel | 18×8mm | Passes JST XH 2.54mm 6-pin connector |
-| Flange | +2mm each side | Sits flush against hub exterior |
+| Flange | +3mm each side | Sits flush against hub exterior (increased from +2mm for bearing strength) |
 | Material | PETG | Mandatory for Speak (amp heat), recommended for all |
 
 ---

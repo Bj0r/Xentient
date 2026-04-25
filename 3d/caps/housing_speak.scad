@@ -46,6 +46,16 @@ module housing_speak() {
 
         // Trapezoidal flare body
         translate([0, 0, Sled_D]) {
+            // Thermal divider (ADDITIVE — solid wall between amp and speaker zones)
+            // Spans inner cavity, separates amp zone (near sled) from speaker zone
+            difference() {
+                translate([0, 0, Flare_Depth * 0.4])
+                    cube([Flare_W - 2*House_Wall, Div_Wall_T, Flare_Depth * 0.3], center=true);
+                // Wire passthrough through divider
+                translate([0, 0, Flare_Depth * 0.4])
+                    cube([Sled_Wire_H, Sled_Wire_W + 2, Flare_Depth * 0.3 + 2], center=true);
+            }
+
             difference() {
                 // Outer shell: sled face → speaker flare
                 hull() {
@@ -72,11 +82,6 @@ module housing_speak() {
                 // Speaker cutout (40mm diameter, 2mm inset from front)
                 translate([Offset_X, 0, Flare_Depth - Spk_Depth - House_Wall])
                     cylinder(h=Spk_Depth + 1, d=Spk_Dia + 0.4, $fn=48);
-
-                // Thermal divider between amp and speaker magnet
-                // Vertical wall separating amp zone (bottom) from speaker zone
-                translate([0, 0, Flare_Depth * 0.4])
-                    cube([Flare_W + 10, Div_Wall_T, Flare_Depth * 0.3], center=true);
 
                 // MAX98357A mount shelf (behind divider, near sled)
                 translate([0, 0, Sled_D * 0.3])

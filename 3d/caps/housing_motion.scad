@@ -44,7 +44,7 @@ House_Wall2  = 1.5;    // Thin wall near lens dome
 module housing_motion() {
     union() {
         // Sled base with flange
-        male_sled_with_flange(flange_w=2.0, flange_h=2.0, flange_t=2.0);
+        male_sled_with_flange(flange_w=3.0, flange_h=3.0, flange_t=2.0);
 
         // Recessed shroud body
         translate([0, 0, Sled_D]) {

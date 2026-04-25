@@ -38,7 +38,7 @@ PCB_Slot_H  = Mic_PCB_H + 0.4;
 module housing_listen() {
     union() {
         // Sled base with flange
-        male_sled_with_flange(flange_w=2.0, flange_h=2.0, flange_t=2.0);
+        male_sled_with_flange(flange_w=3.0, flange_h=3.0, flange_t=2.0);
 
         // Dome extension from sled entry face
         translate([0, 0, Sled_D]) {
@@ -63,10 +63,10 @@ module housing_listen() {
                 }
 
                 // Acoustic pinhole array (3×3 grid on front face)
+                // Drilled along Z axis — sound enters outward from hub face
                 for (px = [-1, 0, 1], py = [-1, 0, 1]) {
-                    translate([px * Pinhole_Spc, py * Pinhole_Spc, House_Ext])
-                        rotate([0, 90, 0])  // Holes face outward
-                            cylinder(h=House_Wall + 2, d=Pinhole_D, center=true, $fn=16);
+                    translate([px * Pinhole_Spc, py * Pinhole_Spc, House_Ext - 1])
+                        cylinder(h=House_Wall + 4, d=Pinhole_D, center=true, $fn=16);
                 }
 
                 // PCB slot (internal slide-in for 8×8mm board)

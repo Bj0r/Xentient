@@ -78,13 +78,10 @@ module anchor_wall_plate() {
             }
         }
 
-        // Draft angle on cylinder for easier insertion
-        // (1° taper on cylinder outer surface)
+        // Draft angle removed — hub pocket is straight 40mm, taper would
+        // prevent insertion. The 0.4mm clearance on cross-keys provides
+        // enough tolerance for PETG printing.
     }
-
-    // 1° draft taper on cylinder (additive ridge at base for wedge fit)
-    translate([0, 0, Anchor_Depth - 0.5])
-        cylinder(h=1, d1=Anchor_Dia, d2=Anchor_Dia + 1.0, $fn=64);
 }
 
 // ==========================================

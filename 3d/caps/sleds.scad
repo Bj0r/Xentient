@@ -3,8 +3,9 @@
 // Shared modules for all peripheral caps
 // ==========================================
 // Per Framework §2: Universal Mating Protocol
-// Female Socket (in hub): 24.0×16.0×10.0mm, wire channel 18×8mm
+// Female Socket (in hub): 24.4×16.4×10.0mm (0.4mm clearance), wire channel 18×8mm
 // Male Sled (on cap base): 23.6×15.6×10.0mm, 1° draft, hollow 18×8mm
+// Flange: +3mm each side (increased from +2mm for bearing strength)
 // Units: mm
 
 $fn = 64;
@@ -70,7 +71,7 @@ module male_sled() {
 // flange_t: flange thickness
 // ==========================================
 
-module male_sled_with_flange(flange_w=2.0, flange_h=2.0, flange_t=2.0) {
+module male_sled_with_flange(flange_w=3.0, flange_h=3.0, flange_t=2.0) {
     union() {
         male_sled();
 

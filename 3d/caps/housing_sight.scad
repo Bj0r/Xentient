@@ -46,7 +46,7 @@ Ant_Wall     = 1.2;    // Thin wall near antenna (CRITICAL)
 module housing_sight() {
     union() {
         // Sled base with flange
-        male_sled_with_flange(flange_w=2.0, flange_h=2.0, flange_t=2.5);
+        male_sled_with_flange(flange_w=3.0, flange_h=3.0, flange_t=2.5);
 
         // Neck from sled to ball socket
         translate([0, 0, Sled_D]) {
@@ -109,15 +109,11 @@ module camera_head() {
         translate([0, 4, Head_D/2])
             cylinder(h=House_Wall + 2, d=CAM_Lens_D + 0.3, center=true, $fn=32);
 
-        // WiFi antenna zone — THIN WALL (CRITICAL: <1.5mm)
-        // Antenna is at top of board, opposite lens
-        translate([0, Head_H/2 - CAM_Ant_H/2 - 2, 0])
-            difference() {
-                cube([CAM_Ant_W + 4, CAM_Ant_H + 4, Head_D + 4], center=true);
-                // Keep only thin wall on outer face
-                translate([0, House_Wall/2 + Ant_Wall/2, 0])
-                    cube([CAM_Ant_W + 2, CAM_Ant_H + 2, Head_D + 2], center=true);
-            }
+        // WiFi antenna zone — THIN WALL (CRITICAL: <1.5mm on outer face)
+        // Cut a pocket behind the antenna area, leaving only Ant_Wall
+        // thickness on the outer (Y+) face for WiFi signal transparency
+        translate([0, Head_H/2 - Ant_Wall - 1, 0])
+            cube([CAM_Ant_W + 0.4, House_Wall, Head_D + 0.4], center=true);
 
         // Wire channel from board area to ball
         translate([0, -5, -Head_D/2 - Ball_R])

@@ -28,7 +28,7 @@ Base_Min_H   = 10.0;    // Base height at front (lowest point)
 Wall_T       = 2.5;     // Wall thickness
 
 // Cable routing
-Cable_D      = 8.0;     // USB-C cable diameter for routing channel
+Cable_D      = 13.0;    // Channel diameter (matches hub rear 15mm wire hole: 13+2=15)
 
 // Weight fill pocket (for sand/metal insert)
 Weight_W     = 60.0;
@@ -63,9 +63,8 @@ module anchor_desk_pedestal() {
                     cube([Base_W, 2, Base_H], center=true);
             }
 
-            // Draft taper on cylinder
-            translate([0, 0, Anchor_Depth - 0.5])
-                cylinder(h=1, d1=Anchor_Dia, d2=Anchor_Dia + 1.0, $fn=64);
+            // Draft taper removed — hub pocket is straight 40mm, taper
+            // would prevent insertion. Cross-key clearance provides fit tolerance.
         }
 
         // Hollow interior for weight fill
@@ -99,7 +98,6 @@ module anchor_desk_pedestal() {
             }
 
         // Anti-rotation keyway cutouts (matching hub grooves)
-        // 1° draft on cylinder for wedge fit
     }
 }
 

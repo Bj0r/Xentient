@@ -42,7 +42,7 @@ PCB_Shelf_H = 3.0;  // Shelf height for BME board
 module housing_climate() {
     union() {
         // Sled base with flange
-        male_sled_with_flange(flange_w=2.0, flange_h=2.0, flange_t=2.0);
+        male_sled_with_flange(flange_w=3.0, flange_h=3.0, flange_t=2.0);
 
         // Transition + extended box
         translate([0, 0, Sled_D]) {

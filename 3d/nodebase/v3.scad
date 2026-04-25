@@ -47,38 +47,12 @@ Breakout_W   = 30.0;    // JST-breakout PCB width
 Breakout_H   = 20.0;    // JST-breakout PCB height
 Sleeve_Wall  = 2.0;     // Pocket sleeve wall thickness
 
-// --- Battery Holder (18650 single cell) ---
-BH_L       = 78.0;     // Battery holder length
-BH_W       = 22.0;     // Battery holder width
-BH_H       = 19.0;     // Battery holder height
-BH_Clear   = 0.2;      // Clearance
-
-// --- Master Board (120x80mm solder board) ---
-Board_L    = 120.0;
-Board_W    = 80.0;
-Board_SoX  = 110.0;    // Standoff span X (80mm board width, ~110mm along length)
-Board_SoY  = 70.0;     // Standoff span Y (120mm board length, ~70mm along width)
-Board_Chamfer = 15.0;   // Corner chamfer to fit inside hex at Z=20 (8mm was too small)
-
-// --- ESP32-WROOM-32 Dev Board ---
-ESP_BoardL  = 55.0;
-ESP_BoardW  = 28.0;
-ESP_SoX     = 22.0;
-ESP_SoY     = 48.0;
-ESP_SoH     = 20.0;    // Standoff pillar height
-
 // --- Fastener specs ---
 M3_Hole   = 3.2;   // M3 heat-set insert hole
 M3_Boss   = 5.0;   // Slim M3 boss
 M3_Insert = 4.2;   // Heat-set insert for M3
 M2_Hole   = 2.4;   // M2 screw body
 M2_Boss   = 4.0;   // Slim M2 boss (spec says 4mm)
-
-// --- Power Modules ---
-TP4056_L  = 25.0;  TP4056_W = 19.0;  TP4056_H = 10.0;
-MT3608_L  = 37.0;  MT3608_W = 22.0;  MT3608_H = 10.0;
-LDO_L     = 12.0;  LDO_W    = 8.0;   LDO_H    = 5.0;
-Clip_T    = 1.5;   Clip_Clear = 0.2;
 
 // --- Rear Anchor ---
 Anchor_Dia = 40.0;
@@ -185,9 +159,15 @@ module socket_pocket_sleeve() {
 // ==========================================
 
 module front_port_negative() {
-    // Pocket cutout through front face + sleeve
+    // Pocket cutout through front face + sleeve (with 1° draft, matching side pockets)
+    draft_off = Port_D * tan(1.0);
     translate([0, 0, Total_Depth - Port_D / 2])
-        cube([Port_H, Port_W, Port_D + 2], center=true);
+        hull() {
+            translate([0, 0, Port_D/2 - 0.5])
+                cube([Port_H + 2*draft_off, Port_W + 2*draft_off, 1], center=true);
+            translate([0, 0, -Port_D/2 + 0.5])
+                cube([Port_H, Port_W, 1], center=true);
+        };
 
     // Wire channel inward
     translate([0, 0, Inner_Front_Z / 2 + Shell_T])
@@ -242,63 +222,9 @@ module front_port_sleeve() {
     }
 }
 
-module lcd_standoffs() {
-    so_h = 6.0;
-    for (sx = [-1, 1], sy = [-1, 1]) {
-        translate([sx * LCD_Mount_X / 2, sy * LCD_Mount_Y / 2, 0])
-            difference() {
-                cylinder(h=so_h, d=M3_Boss, $fn=32);
-                translate([0, 0, so_h * 0.35])
-                    cylinder(h=so_h * 0.65 + 1, d=M3_Insert, $fn=32);
-            }
-    }
-}
-
 // ==========================================
-// 6. ZONE A: BATTERY CRADLE (Z=0 to 15)
+// 6. USB-C CUTOUT
 // ==========================================
-
-module battery_cradle() {
-    pL = BH_L + 2*BH_Clear;
-    pW = BH_W + 2*BH_Clear;
-    lip_h = 3.0;
-
-    // Floor plate
-    translate([0, 0, -1])
-        cube([pL, pW, 2], center=true);
-
-    // Y-axis retaining lips
-    for (s = [-1, 1]) {
-        translate([0, s * (pW/2 + Clip_T/2), lip_h/2 - 1])
-            cube([pL + 2*Clip_T, Clip_T, lip_h], center=true);
-    }
-    // X-axis retaining lips
-    for (s = [-1, 1]) {
-        translate([s * (pL/2 + Clip_T/2), 0, lip_h/2 - 1])
-            cube([Clip_T, pW + 2*Clip_T, lip_h], center=true);
-    }
-}
-
-// ==========================================
-// 7. ZONE A: POWER MODULE POCKETS
-// ==========================================
-
-module power_module_clip(mod_L, mod_W, mod_H) {
-    cL = mod_L/2 + Clip_Clear;
-    cW = mod_W/2 + Clip_Clear;
-
-    for (s = [-1, 1]) {
-        translate([0, s * (cW + Clip_T/2), mod_H/4])
-            cube([mod_L + 2*Clip_Clear + 2*Clip_T, Clip_T, mod_H/2], center=true);
-    }
-    for (s = [-1, 1]) {
-        translate([s * (cL + Clip_T/2), 0, mod_H/4])
-            cube([Clip_T, mod_W + 2*Clip_Clear + 2*Clip_T, mod_H/2], center=true);
-    }
-
-    translate([0, 0, -1])
-        cube([mod_L + 2*Clip_Clear, mod_W + 2*Clip_Clear, 2], center=true);
-}
 
 module usb_c_cutout_negative() {
     // USB-C on collar face, aligned with TP4056 module (Y=30)
@@ -318,75 +244,7 @@ module usb_c_cutout_negative() {
 }
 
 // ==========================================
-// 8. ZONE B: MASTER BOARD STANDOFFS (Z=20)
-// ==========================================
-
-module master_board_standoffs() {
-    // 4x M3 standoffs for 120x80mm solder board
-    // Board sits at Z=20, standoffs rise from floor
-    // Board corners chamfered 15mm to fit inside hex at Z=20
-    so_h = 20.0;  // Floor-to-board-top height
-
-    // Board rest plate with chamfered corners (hex-safe)
-    translate([0, 0, so_h - 1])
-        difference() {
-            // Chamfered rectangle (offset for board outline)
-            hull() {
-                for (sx = [-1, 1], sy = [-1, 1]) {
-                    translate([sx * (Board_L/2 - Board_Chamfer),
-                               sy * (Board_W/2 - Board_Chamfer), 0])
-                        cylinder(h=1, r=Board_Chamfer, $fn=4);
-                }
-            }
-            // Central wire routing cutout
-            cylinder(h=3, d=30, $fn=32);
-        }
-
-    // 4x M3 standoff pillars
-    for (sx = [-1, 1], sy = [-1, 1]) {
-        translate([sx * Board_SoX/2, sy * Board_SoY/2, 0])
-            difference() {
-                cylinder(h=so_h, d=M3_Boss, $fn=32);
-                translate([0, 0, so_h * 0.35])
-                    cylinder(h=so_h * 0.65 + 1, d=M3_Insert, $fn=32);
-            }
-    }
-
-    // Cross-bracing between standoffs for rigidity
-    for (sx = [-1, 1]) {
-        hull() {
-            translate([sx * Board_SoX/2, -Board_SoY/2, 0])
-                cylinder(h=so_h * 0.6, d=M3_Boss, $fn=16);
-            translate([sx * Board_SoX/2, Board_SoY/2, 0])
-                cylinder(h=so_h * 0.6, d=M3_Boss, $fn=16);
-        }
-    }
-}
-
-// ==========================================
-// 9. ZONE C: ESP32 STANDOFFS (Z=45)
-// ==========================================
-
-module esp32_standoffs() {
-    // 4x M2 standoffs for ESP32-WROOM-32
-    // Board floats above master board at Z=45
-    so_h = 20.0;  // Standoff height from Z=45 base
-    for (sx = [-1, 1], sy = [-1, 1]) {
-        translate([sx * ESP_SoX/2, sy * ESP_SoY/2, 0])
-            difference() {
-                cylinder(h=so_h, d=M2_Boss, $fn=32);
-                translate([0, 0, so_h * 0.3])
-                    cylinder(h=so_h * 0.7 + 1, d=M2_Hole, $fn=32);
-            }
-    }
-
-    // Anti-rotation nub
-    translate([ESP_SoX/2 + 2, -3, 0])
-        cube([2, 6, 3]);
-}
-
-// ==========================================
-// 10. VENTILATION (Thermal Gills)
+// 7. VENTILATION (Thermal Gills)
 // ==========================================
 
 module ventilation_negative() {
