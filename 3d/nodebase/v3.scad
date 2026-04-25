@@ -386,3 +386,128 @@ module rear_anchor_negative() {
     translate([0, 0, -10])
         cylinder(h=30, d=15, $fn=32);
 }
+
+// ==========================================
+// 12. MAIN ASSEMBLY
+// ==========================================
+
+module xentient_hub_v3() {
+    // Port positions along Z-axis (midpoint of pocket)
+    port_Z = Collar_H + Pyr_H * 0.5;
+    port_apo = Base_Apo - (Base_Apo - Front_Apo) * ((port_Z - Collar_H) / Pyr_H);
+
+    inner_r_base = Inner_Base_R;
+    inner_r_front = Inner_Front_R2;
+
+    difference() {
+        // ====== OUTER HULL + POCKET SLEEVES ======
+        union() {
+            // Rear collar
+            cylinder(h=Collar_H, r=Base_R, $fn=6);
+            // Tapered body
+            translate([0, 0, Collar_H])
+                cylinder(h=Pyr_H, r1=Base_R, r2=Front_R, $fn=6);
+            // Aesthetic ribs
+            for (i = [0 : 60 : 359]) {
+                rotate([0, 0, i])
+                    translate([Base_F2F/2 - 1, 0, Collar_H/2])
+                        cube([4, 12, Collar_H + 2], center=true);
+            }
+
+            // 6x Side pocket sleeves (provide 15mm depth)
+            for (a = [30 : 60 : 330]) {
+                rotate([0, 0, a])
+                    translate([port_apo - Port_D/2, 0, port_Z])
+                        rotate([0, 90 - Face_Tilt, 0])
+                            socket_pocket_sleeve();
+            }
+
+            // Top face pocket sleeve
+            translate([0, 0, Total_Depth - Port_D/2])
+                rotate([0, 0, 90])
+                    front_port_sleeve();
+        }
+
+        // ====== HOLLOW CORE ======
+        translate([0, 0, Shell_T])
+            cylinder(h=Collar_H, r=inner_r_base, $fn=6);
+        translate([0, 0, Shell_T + Collar_H])
+            cylinder(h=Inner_Front_Z - Shell_T - Collar_H,
+                     r1=inner_r_base,
+                     r2=inner_r_front, $fn=6);
+
+        // ====== 6x SIDE POCKETS ======
+        for (a = [30 : 60 : 330]) {
+            rotate([0, 0, a])
+                translate([port_apo, 0, port_Z])
+                    rotate([0, 90 - Face_Tilt, 0])
+                        socket_pocket_negative();
+        }
+
+        // ====== TOP CENTER POCKET ======
+        front_port_negative();
+
+        // ====== REAR ANCHOR ======
+        rear_anchor_negative();
+
+        // ====== USB-C CUTOUT ======
+        usb_c_cutout_negative();
+
+        // ====== VENTILATION GILLS ======
+        // On 3 alternate faces (between port faces)
+        for (a = [0, 120, 240]) {
+            rotate([0, 0, a])
+                translate([Base_Apo, 0, 0])
+                    ventilation_negative();
+        }
+    }
+
+    // ====== INTERNAL STRUCTURE (clipped to cavity) ======
+    intersection() {
+        translate([0, 0, Shell_T + 1])
+            cylinder(h=Inner_Front_Z - Shell_T - 2,
+                     r1=inner_r_base - 1,
+                     r2=inner_r_front - 1, $fn=6);
+
+        union() {
+            // Zone A Floor Plate
+            translate([0, 0, Shell_T])
+                cylinder(h=2, r=Base_R - 6, $fn=6);
+
+            // Zone A: Battery Cradle (centered, Y offset rear)
+            translate([0, -25, Shell_T + 2])
+                battery_cradle();
+
+            // Zone A: Power Modules
+            // TP4056 near USB-C wall (Y=30)
+            translate([0, 30, Shell_T + 2])
+                power_module_clip(TP4056_L, TP4056_W, TP4056_H);
+
+            // MT3608 next to TP4056
+            translate([-22, 30, Shell_T + 2])
+                power_module_clip(MT3608_L, MT3608_W, MT3608_H);
+
+            // 3.3V LDO
+            translate([20, 15, Shell_T + 2])
+                power_module_clip(LDO_L, LDO_W, LDO_H);
+
+            // Zone B: Master Board Standoffs (Z=20)
+            translate([0, 0, 20])
+                master_board_standoffs();
+
+            // Zone C: ESP32 Standoffs (Z=45)
+            translate([0, 18, 45])
+                esp32_standoffs();
+
+            // Zone C-front: LCD Mount Standoffs
+            translate([0, 0, Inner_Front_Z - 1])
+                lcd_standoffs();
+        }
+    }
+}
+
+// ==========================================
+// RENDER
+// ==========================================
+
+xentient_hub_v3();
