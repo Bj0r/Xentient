@@ -65,6 +65,7 @@ export class ModeManager extends EventEmitter {
 
     const from = this.current;
     this.current = to;
+    this.reconfigureHardware(to);
     logger.info({ from, to }, "Mode transition");
 
     this.publishModeStatus();
@@ -135,6 +136,48 @@ export class ModeManager extends EventEmitter {
       clearTimeout(this.idleTimer);
       this.idleTimer = null;
     }
+  }
+
+  /** Reconfigure hardware subsystems via MQTT commands on mode transitions. */
+  reconfigureHardware(mode: Mode): void {
+    const commands: Record<string, Record<string, unknown>> = {};
+
+    switch (mode) {
+      case "sleep":
+        commands.audio = { action: "disable" };
+        commands.sensors = { action: "disable" };
+        commands.camera = { action: "disable" };
+        commands.pir = { action: "wake_only" };
+        break;
+      case "listen":
+        commands.audio = { action: "vad_only" };
+        commands.sensors = { action: "poll_5s" };
+        commands.camera = { action: "standby" };
+        commands.pir = { action: "active" };
+        break;
+      case "active":
+        commands.audio = { action: "streaming" };
+        commands.sensors = { action: "poll_5s" };
+        commands.camera = { action: "on_demand" };
+        commands.pir = { action: "active" };
+        break;
+      case "record":
+        commands.audio = { action: "capture_to_disk" };
+        commands.sensors = { action: "log_to_disk" };
+        commands.camera = { action: "interval_capture" };
+        commands.pir = { action: "active" };
+        break;
+    }
+
+    for (const [subsystem, cmd] of Object.entries(commands)) {
+      this.mqtt.publish(`xentient/control/${subsystem}`, {
+        v: 1,
+        type: "subsystem_command",
+        mode,
+        ...cmd,
+      });
+    }
+    logger.info({ mode }, "Hardware reconfiguration commands sent");
   }
 
   private publishModeStatus(): void {
