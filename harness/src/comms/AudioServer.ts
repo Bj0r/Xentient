@@ -121,10 +121,13 @@ export class AudioServer extends EventEmitter {
     this.emit('audioChunk', data);
   }
 
-  /** Send TTS audio back to ESP32 as binary frames */
+  /** Send TTS audio back to ESP32 as binary frames with 0xA0 prefix */
   sendAudio(audioBuffer: Buffer): void {
     if (this.activeConnection?.readyState === WebSocket.OPEN) {
-      this.activeConnection.send(audioBuffer, { binary: true });
+      const prefixed = Buffer.alloc(1 + audioBuffer.length);
+      prefixed[0] = AUDIO_WS_PREFIX;
+      audioBuffer.copy(prefixed, 1);
+      this.activeConnection.send(prefixed, { binary: true });
     } else {
       logger.warn('No active WebSocket connection to send audio to');
     }
