@@ -10,9 +10,9 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 |-------|------|--------|
 | 1: Node Base & Comms | ESP32 firmware + MQTT telemetry | Not started |
 | 2: Harness & Intelligence | Voice pipeline + memory (SUPERSEDED by bridge reframe — see note below) | Superseded |
-| 3: Web Console (Laravel demo cut) & Assembly | Laravel+Livewire+Reverb console (mode switch, session feed, T2 telemetry) on Laragon + cloudflared tunnel; final hardware assembly | Not started |
-| 4: Optimization & Demo Prep | Latency + demo narrative | Not started |
-| 5: Doc Architecture Refactor | Restructure docs to bridge model | In progress |
+| 3: Web Console (Laravel demo cut) & Assembly | Laravel+Livewire+Reverb console (mode switch, session feed, T2 telemetry) on Laragon + cloudflared tunnel; breadboard prototype assembly (no furnished casing) | Not started |
+| 4: Optimization & Demo Prep | Latency + prototype video demo | Not started |
+| 5: Doc Architecture Refactor | Restructure docs to bridge model | Complete |
 
 **Phase 2 Note:** **Phase 2 is SUPERSEDED.** The n8n-style orchestration vision has been replaced by the bridge model (see docs/VISION.md). The custom memory layer (MEM-01/02/03) will be replaced by Hermes+Mem0 integration in Platform Track P1-P2. Phase 2 deliverables that still ship in the demo (voice pipeline, MQTT bridge, basic memory) are carried forward as-is.
 
@@ -54,8 +54,8 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 - [ ] 02-01: Orchestrate the voice pipeline (STT→LLM→TTS).
 - [ ] 02-02: Implement SQLite/FTS5 Memory layer with proactive retrieval.
 
-### Phase 3: Web Console (Demo Cut) & Hardware Assembly
-**Goal**: Ship the minimum-viable Laravel + Livewire Web Console plus complete physical assembly.
+### Phase 3: Web Console (Demo Cut) & Breadboard Assembly
+**Goal**: Ship the minimum-viable Laravel + Livewire Web Console plus breadboard prototype assembly (no furnished casing — filming prototype as-is).
 **Depends on**: Phase 1 (MQTT contract + telemetry); Phase 2 voice pipeline (carried-forward parts)
 **Requirements**: WEB-01, WEB-02, WEB-03, NODE-03, HW-PHYSICAL
 **Stack note**: SvelteKit was the prior assumption — superseded by Laravel 12 + Livewire 3 + Reverb (see `docs/WEB_CONTROL.md` Tech Stack). Web Console is a **separate process** from Core, hosted on operator PC + cloudflared tunnel for demo.
@@ -65,21 +65,21 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
   3. Live telemetry (T2): RMS / sensor sparklines update via Reverb WebSocket as the room is active.
   4. Every voice interaction is recorded as an artifact (audio + transcript on local disk + DB row) and appears as a card in the Sessions feed with ▶ playback.
   5. Web-button trigger ("Run pipeline now") publishes synthetic trigger MQTT message as fallback to wake word.
-  6. Hardware physically assembled, ESP-CAM UART link operational, power path validated.
+  6. Breadboard prototype assembled, ESP-CAM UART link operational, power path validated. No furnished casing required.
 **Plans**: 3 plans
 - [ ] 03-01: Scaffold Laravel + Livewire + Reverb app on Laragon; wire php-mqtt/client; auth-free single-operator pages (Dashboard, Sessions, Telemetry).
 - [ ] 03-02: Implement mode-switch + web-button-trigger via MQTT; Reverb-driven live telemetry charts; Sessions feed reading artifacts from Core's disk path.
-- [ ] 03-03: Final hardware assembly, ESP-CAM UART link, power path validation, cloudflared tunnel verified end-to-end.
+- [ ] 03-03: Breadboard prototype assembly, ESP-CAM UART link, power path validation, cloudflared tunnel verified end-to-end.
 
-### Phase 4: Optimization & Demo Prep
-**Goal**: Professional polish for the April 24 presentation.
+### Phase 4: Optimization & Prototype Video Demo
+**Goal**: Polish for prototype video demo — latency + walk-through script.
 **Depends on**: Phase 3
 **Requirements**: HW-PHYSICAL, WEB-03
 **Success Criteria**:
   1. Audio round-trip latency (Silence to Speech) is <3 seconds.
-  2. The demo script runs successfully without "rebooting" the node.
+  2. Prototype video demo script runs successfully on breadboard without rebooting the node.
 **Plans**: 1 plan
-- [ ] 04-01: Latency audit, error-handling polish, and demo narrative synchronization.
+- [ ] 04-01: Latency audit, error-handling polish, and prototype video demo script.
 
 ### Phase 5: Doc Architecture Refactor
 **Goal**: Restructure all project documentation to reflect the bridge-model vision. Two-track roadmap: Demo Track (frozen) + Platform Track (P1-P9).
@@ -98,6 +98,26 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 - [ ] 05-02: Create CONTRACTS.md, PACKS.md, SPACES.md, INTEGRATIONS/*.md
 - [ ] 05-03: Rewrite ROADMAP.md, PROJECT.md, REQUIREMENTS.md; trim NOTES.md; shrink xentient.md; add SUPERSEDED marker; update STATE.md
 
+### Phase 6: Xentient Layers
+**Goal**: Implement the two-layer execution model (CoreSkill L1 + BrainSkill L2) from `docs/SPEC-xentient-layers.md`.
+**Depends on**: Existing Core (`harness/src/`), SPEC-heartbeat-rule-engine.md architecture
+**Requirements**: PT-03, PT-04
+**Success Criteria**:
+  1. `CoreSkill` types compile (`npx tsc --noEmit` exits 0).
+  2. `SkillExecutor` starts on Core boot and logs `SkillExecutor started`.
+  3. Registering a skill via `xentient_register_skill` MCP tool persists it to the heartbeat loop.
+  4. An event-triggered skill fires within 1 tick of the matching event.
+  5. An escalation-eligible skill sends `xentient/skill_escalated` notification to Brain.
+  6. A conflict between two skills in the same `conflictGroup` sends `xentient/skill_conflict` to Brain.
+  7. All Vitest suites pass: `npx vitest run` exits 0.
+  8. Brain can call `xentient_list_skills` and see all registered skills with `fireCount` + state.
+**Plans**: 5 plans
+- [x] 06-01: CoreSkill, Space, Mode, SkillLog types (`shared/types.ts` + `contracts.ts`)
+- [x] 06-02: SkillExecutor — tick loop, L1 actions, escalation pipeline, conflict detection
+- [ ] 06-03: SpaceManager + 8 MCP skill management tools (register/update/disable/remove/list/log/switch_mode/resolve_conflict)
+- [ ] 06-04: Wire SpaceManager into `core.ts` — default Space, MQTT forwarding, SSE relay
+- [ ] 06-05: Vitest tests for SkillLog, SkillExecutor, SpaceManager
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -106,7 +126,8 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 | 2. Harness & Intel | 0/2 | Superseded | - |
 | 3. Web & Assembly | 0/2 | Not started | - |
 | 4. Optimization | 0/1 | Not started | - |
-| 5. Doc Refactor | 1/3 | In progress | 05-01 |
+| 5. Doc Refactor | 3/3 | Complete | 05-01, 05-02, 05-03 |
+| 6. Xentient Layers | 2/5 | In progress | 06-01, 06-02 |
 
 ## Document Architecture
 
@@ -120,4 +141,4 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 
 ---
 *Roadmap defined: 2026-04-13*
-*Last updated: 2026-04-19 — Phase 5 added, two-track structure, bridge model reframe*
+*Last updated: 2026-04-28 — Demo scope reduced (breadboard prototype, no casing). Phase 5 complete. Phase 6 Waves 1-2 done. Beads aligned.*

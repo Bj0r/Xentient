@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-last_updated: "2026-04-20T17:35:00Z"
+last_updated: "2026-04-28T00:00:00.000Z"
 progress:
-  total_phases: 5
-  completed_phases: 0
-  total_plans: 9
-  completed_plans: 4
-  percent: 44
+  total_phases: 6
+  completed_phases: 2
+  total_plans: 7
+  completed_plans: 5
+  percent: 71
 ---
 
 # Project State: Xentient
@@ -19,13 +19,17 @@ progress:
 See: [.planning/PROJECT.md](file:///d:/Projects/Xentient/.planning/PROJECT.md) (updated 2026-04-19)
 
 **Core value:** The IoT terminal — a thin voice/hardware bridge that lets any AI brain inhabit a physical room.
-**Current focus:** Phase 5 — doc-architecture-refactor (plans 01-03 complete)
+**Current focus:** Phase 6 — Xentient Layers (Waves 3-5 remaining)
 
 ## Active Context
 
-Phase 5 complete: all doc architecture refactor plans executed. ROADMAP.md rewritten with two-track structure (Demo Track + Platform Track P1-P9). PROJECT.md and REQUIREMENTS.md updated for bridge model. NOTES.md trimmed to append-only decision log. xentient.md shrunk to ~90-line L0 pitch. Phase 2 marked SUPERSEDED.
+Phase 5 complete. Phase 6 in progress: Waves 1-2 (CoreSkill types + SkillExecutor) done, Waves 3-5 (SpaceManager + MCP tools, core wiring, tests) remaining.
 
-Quick task 260420-4do complete: ModeManager wired into Core runtime — MQTT mode/sensor events, idle timeouts (listen 60s, active 300s), PIR wake (sleep->listen), Pipeline mode-aware audio gating, LCD face display publishing on mode transitions. ModeManager now extends EventEmitter for mode change propagation. Pipeline drops audio in sleep, processes in active, buffers in listen.
+Demo scope reduced: no furnished casing required — filming breadboard prototype as-is. P3-ASSY now covers breadboard assembly + validation only (no 3D-printed enclosure).
+
+**Open bugs:** PIR interrupt not wired in firmware (9id, P0) — blocks sleep→listen demo. Two P1 bugs deferred (bgx: dead MQTT sub, b94: audio prefix).
+
+Quick task 260420-4do complete: ModeManager wired into Core runtime — MQTT mode/sensor events, idle timeouts (listen 60s, active 300s), PIR wake (sleep→listen), Pipeline mode-aware audio gating, LCD face display publishing on mode transitions.
 
 ## Milestone Status
 
@@ -42,7 +46,8 @@ Quick task 260420-4do complete: ModeManager wired into Core runtime — MQTT mod
 - Two-track roadmap: Demo Track (frozen) + Platform Track (P1-P9)
 - Brain Router: Core's dispatch layer routing handler calls across tiers
 - Mem0 as primary memory layer (P2), Hermes as default brain (P1)
-- Demo ships current harness as-is — no Platform Track code before Apr 24
+- Demo scope reduced: breadboard prototype filming, no furnished casing required
+- P3-ASSY merged with 03-07: single hardware assembly task, breadboard scope only
 
 ## Roadmap Evolution
 
@@ -69,4 +74,4 @@ Quick task 260420-4do complete: ModeManager wired into Core runtime — MQTT mod
 | 260420-4do | Mode Manager wired into Core | 2026-04-20 | d21750b | [260420-4do-xentient-ifd](.planning/quick/260420-4do-xentient-ifd/) |
 
 ---
-*State updated: 2026-04-20 (after quick-260420-4do)*
+*State updated: 2026-04-28 (bead alignment + demo scope reduction)*
