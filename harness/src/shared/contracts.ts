@@ -266,3 +266,45 @@ export const MCP_EVENTS = {
 
 // ── Export all schemas for JSON-Schema generation ────────────────────
 export const ALL_CONTRACT_SCHEMAS = ALL_SCHEMAS;
+
+// ============================================================
+// XENTIENT LAYERS — New MCP Events + Mode constants
+// Spec: docs/SPEC-xentient-layers.md §8.2
+// ============================================================
+
+export const SKILL_EVENTS = {
+  SKILL_ESCALATED: 'xentient/skill_escalated',
+  SKILL_CONFLICT: 'xentient/skill_conflict',
+  SKILL_FIRED: 'xentient/skill_fired',
+  MODE_SWITCHED: 'xentient/mode_switched',
+} as const;
+
+export type SkillEventKey = keyof typeof SKILL_EVENTS;
+
+// New MCP Tool names (Brain → Core)
+export const SKILL_TOOLS = {
+  REGISTER_SKILL: 'xentient_register_skill',
+  UPDATE_SKILL: 'xentient_update_skill',
+  DISABLE_SKILL: 'xentient_disable_skill',
+  REMOVE_SKILL: 'xentient_remove_skill',
+  LIST_SKILLS: 'xentient_list_skills',
+  GET_SKILL_LOG: 'xentient_get_skill_log',
+  SWITCH_MODE: 'xentient_switch_mode',
+  RESOLVE_CONFLICT: 'xentient_resolve_conflict',
+} as const;
+
+// Builtin skill IDs (cannot be removed)
+export const BUILTIN_SKILL_IDS = [
+  '_pir-wake',
+  '_idle-sleep',
+  '_sensor-telemetry',
+  '_determine-skill',
+] as const;
+
+export type BuiltinSkillId = typeof BUILTIN_SKILL_IDS[number];
+
+// Default skill execution log capacity
+export const SKILL_LOG_CAPACITY = 1000;
+
+// Conflict resolution timeout (ms) — fall back to priority if Brain doesn't respond
+export const CONFLICT_TIMEOUT_MS = 10_000;
