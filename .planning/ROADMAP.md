@@ -8,11 +8,12 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 
 | Phase | Goal | Status |
 |-------|------|--------|
-| 1: Node Base & Comms | ESP32 firmware + MQTT telemetry | Not started |
+| 1: Node Base & Comms | ESP32 firmware + MQTT telemetry | **Complete** (PIR wake bug 9id open) |
 | 2: Harness & Intelligence | Voice pipeline + memory (SUPERSEDED by bridge reframe — see note below) | Superseded |
-| 3: Web Console (Laravel demo cut) & Assembly | Laravel+Livewire+Reverb console (mode switch, session feed, T2 telemetry) on Laragon + cloudflared tunnel; breadboard prototype assembly (no furnished casing) | Not started |
+| 3: Web Console (Laravel demo cut) & Assembly | Laravel+Livewire+Reverb console + breadboard assembly | Not started |
 | 4: Optimization & Demo Prep | Latency + prototype video demo | Not started |
 | 5: Doc Architecture Refactor | Restructure docs to bridge model | Complete |
+| 6: Xentient Layers | CoreSkill, SkillExecutor, SpaceManager, MCP tools | Complete |
 
 **Phase 2 Note:** **Phase 2 is SUPERSEDED.** The n8n-style orchestration vision has been replaced by the bridge model (see docs/VISION.md). The custom memory layer (MEM-01/02/03) will be replaced by Hermes+Mem0 integration in Platform Track P1-P2. Phase 2 deliverables that still ship in the demo (voice pipeline, MQTT bridge, basic memory) are carried forward as-is.
 
@@ -22,8 +23,8 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 |-------|------|-----------|------------|
 | P1: Hermes Adapter | Replace custom LLM+memory loop with Hermes connection | -300 LOC, +80 LOC | Hermes installed |
 | P2: Mem0 Integration | Add Mem0 as Hermes plugin + direct API fallback | +30 LOC | Mem0 Docker |
-| P3: Mode Manager | sleep/listen/active/record state machine | +60 LOC | None |
-| P4: Space Manager | Space context + MQTT contract + permissions | +100 LOC | P3 |
+| P3: Mode Manager | sleep/listen/active/record state machine | **Built** in Phase 6 | None |
+| P4: Space Manager | Space context + MQTT contract + permissions | **Built** in Phase 6 | P3 |
 | P5: Pack Loader v2 | New handler types, space awareness | +60 LOC | P1, P4 |
 | P6: Web Console (Laravel) — Full | Expand demo Laravel app: replace direct MQTT publishing with Core REST calls; add Pack/Space CRUD, permission/integration toggles, audit log, multi-user auth, brain-adapter panels (Hermes/Archon/OpenClaw), MySQL/Postgres migration, VPS deploy + artifact sync | +0 LOC to Core; ~3K LOC Laravel app | P3 (demo cut), P4, P5 |
 | P7: Communication Bridge | REST/WS/MQTT bridge between Core and AI Brain tier | +100 LOC | P1 |
@@ -36,14 +37,15 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 **Goal**: Establish the "always-on" hardware foundation and telemetry path.
 **Depends on**: Nothing
 **Requirements**: NODE-01, NODE-02, NODE-04, NODE-05
-**Success Criteria**:
-  1. Node Base detects a peripheral in slot 4 via I2C.
-  2. Voice Activity Detection (RMS) triggers an MQTT notification.
-  3. Sensor telemetry (Temp/Hum) is published to the local Mosquitto broker.
-**Plans**: 3 plans
-- [ ] 01-01: Setup PlatformIO environment and GPIO/Peripheral enumeration logic.
-- [ ] 01-02: Implement MQTT pub/sub client with retry and JSON protocol logic.
-- [ ] 01-03: Implement RMS-based Voice Activity Detection and audio chunking.
+**Status**: **Complete.** Firmware built: main.cpp, mqtt_client, lcd_driver, i2s_mic, vad, ws_audio, cam_relay, bme_reader. PIR ISR attached (bug 9id: ModeManager doesn't transition sleep→listen on PIR — firmware side works, harness gap). Validation sketches passing.
+**Success Criteria** (all met):
+  1. Node Base detects peripherals via I2C (LCD 0x27, BME280 0x76).
+  2. Voice Activity Detection triggers MQTT notification (trigger_pipeline source=voice).
+  3. Sensor telemetry (Temp/Hum/Pressure) published to Mosquitto broker.
+**Plans**: 3 plans (all done)
+- [x] 01-01: PlatformIO environment + GPIO/Peripheral enumeration
+- [x] 01-02: MQTT pub/sub client with retry and JSON protocol
+- [x] 01-03: RMS-based Voice Activity Detection and audio chunking
 
 ### Phase 2: Harness & Intelligence Layer (SUPERSEDED)
 **Goal**: ~~Build the n8n-style orchestration engine and Hermes-Agent memory.~~ Voice pipeline + MQTT bridge + basic memory. Superseded by bridge model — see SUPERSEDED.md in this directory.
@@ -122,9 +124,9 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Node Base & Comms | 0/3 | Not started | - |
+| 1. Node Base & Comms | 3/3 | **Complete** | 01-01, 01-02, 01-03 |
 | 2. Harness & Intel | 0/2 | Superseded | - |
-| 3. Web & Assembly | 0/2 | Not started | - |
+| 3. Web & Assembly | 0/3 | Not started | - |
 | 4. Optimization | 0/1 | Not started | - |
 | 5. Doc Refactor | 3/3 | Complete | 05-01, 05-02, 05-03 |
 | 6. Xentient Layers | 5/5 | Complete | 06-01 through 06-05 |
@@ -141,4 +143,4 @@ Xentient is the IoT terminal — a thin voice/hardware bridge that lets any AI b
 
 ---
 *Roadmap defined: 2026-04-13*
-*Last updated: 2026-04-28 — Phase 6 complete (all 5 waves). Demo scope reduced (breadboard prototype, no casing).*
+*Last updated: 2026-04-28 — Phase 1+5+6 complete. Platform Track P3/P4 built. P0 bug: PIR wake (9id). Next: P3-ASSY breadboard assembly (p5v).*
